@@ -3,148 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate QR & PDF Converter</title>
+    <title>UltraTools Hub | Ultimate Zen Suite</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/gh/ushelp/EasyQRCodeJS@master/dist/easy.qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
-        .glass-morphism { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .tab-active { border-bottom: 4px solid #4f46e5; color: #4f46e5; }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
+        
+        :root {
+            --zen-dark: #020617;
+            --zen-panel: #0f172a;
+            --zen-mint: #2dd4bf;
+            --zen-text: #f1f5f9;
+        }
+
+        body {
+            background-color: var(--zen-dark);
+            color: var(--zen-text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-link { transition: 0.3s; border-left: 4px solid transparent; }
+        .nav-link.active {
+            border-color: var(--zen-mint);
+            background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent);
+            color: var(--zen-mint);
+        }
+
+        .tool-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .tool-card:hover { transform: translateY(-10px); border-color: var(--zen-mint); }
+
+        .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+        .pattern-btn { cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .pattern-btn.active { border-color: var(--zen-mint); background: rgba(45, 212, 191, 0.1); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-thumb { background: var(--zen-mint); border-radius: 10px; }
+
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="flex flex-col md:flex-row h-screen">
 
-    <div class="max-w-4xl mx-auto glass-morphism rounded-2xl shadow-2xl overflow-hidden">
-        <div class="p-6 md:p-10">
-            <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-8">Multi-Tool Converter</h1>
+    <aside class="w-full md:w-80 glass p-8 flex flex-col z-50">
+        <div class="mb-10 flex items-center gap-4">
+            <div class="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center text-slate-950 font-black shadow-lg shadow-teal-500/20">UT</div>
+            <h1 class="text-xl font-extrabold tracking-tighter">UltraTools Hub</h1>
+        </div>
 
-            <div class="flex border-b mb-8 justify-center space-x-8">
-                <button onclick="showTab('qr-section')" id="qr-tab" class="py-3 px-6 font-bold transition tab-active">QR Generator</button>
-                <button onclick="showTab('pdf-section')" id="pdf-tab" class="py-3 px-6 font-bold text-gray-400 transition">PDF Converter</button>
+        <nav class="flex-1 space-y-1 overflow-y-auto pr-2">
+            <button onclick="tab('dash')" class="nav-link active w-full text-left p-4 rounded-xl flex items-center gap-4">
+                <i class="fa-solid fa-layer-group"></i> Dashboard
+            </button>
+            <p class="text-[10px] font-black text-slate-600 uppercase mt-8 mb-4 px-4 tracking-[3px]">Studio Lab</p>
+            <button onclick="tab('qr')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                <i class="fa-solid fa-qrcode text-teal-400"></i> QR Designer Pro
+            </button>
+            <button onclick="tab('pdf')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                <i class="fa-solid fa-file-pdf text-orange-400"></i> PDF Lab Pro
+            </button>
+            <button onclick="tab('ai')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                <i class="fa-solid fa-robot text-purple-400"></i> AI Media (Speech)
+            </button>
+        </nav>
+
+        <div class="pt-6 border-t border-slate-800 space-y-4">
+            <button onclick="toggleModal('guide-modal')" class="w-full py-3 glass rounded-xl text-xs font-bold hover:bg-slate-800 transition">
+                <i class="fa-solid fa-book-open mr-2"></i> GUIDELINE
+            </button>
+            <button onclick="checkAdmin()" class="w-full text-[9px] text-slate-700 font-black uppercase tracking-widest hover:text-teal-400">Admin Console</button>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 md:p-16 relative">
+        
+        <div class="w-full h-24 glass rounded-[30px] mb-12 flex items-center justify-center border-dashed border-2 border-slate-800 text-slate-700 text-[10px] font-black tracking-[4px]">
+            [AD REVENUE SLOT - HEADER]
+        </div>
+
+        <section id="dash" class="tab-view fade-in space-y-12">
+            <div>
+                <h2 class="text-5xl font-black mb-4 tracking-tight">Expert <span class="text-teal-400">Utility.</span></h2>
+                <p class="text-slate-400 max-w-2xl leading-relaxed text-lg">အဆင့်မြင့်လုပ်ဆောင်ချက် ၃၀ ကျော်ကို အေးမြသော Zen ဒီဇိုင်းဖြင့် စုစည်းထားသည်။</p>
             </div>
-
-            <div id="qr-section" class="grid md:grid-cols-2 gap-8">
-                <div class="space-y-4">
-                    <div>
-                        <label class="block font-semibold text-gray-700">Text or Link</label>
-                        <textarea id="qr-input" rows="3" class="w-full mt-1 border rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Link သို့မဟုတ် စာသားများထည့်ပါ..."></textarea>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold">QR Color</label>
-                            <input type="color" id="qr-color" class="w-full h-10 mt-1 rounded-lg border-none" value="#000000">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold">Size (px)</label>
-                            <input type="number" id="qr-size" class="w-full mt-1 border rounded-lg p-2" value="300">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700">Add Logo</label>
-                        <input type="file" id="qr-logo" accept="image/*" class="w-full text-sm mt-1 file:bg-indigo-50 file:rounded-full file:border-0 file:px-4 file:py-2">
-                    </div>
-                    <button onclick="generateQR()" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition transform hover:scale-105">Generate QR Code</button>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass p-8 rounded-[40px] tool-card border-b-8 border-teal-500">
+                    <i class="fa-solid fa-wand-magic-sparkles text-4xl text-teal-400 mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">QR Patterns</h3>
+                    <p class="text-sm text-slate-500">Heart, Star, Gift Box အစရှိသည့် ပုံစံ ၃၀ ကျော်ဖြင့် QR ထုတ်နိုင်သည်။</p>
                 </div>
-                <div class="flex flex-col items-center justify-center bg-gray-50 rounded-2xl p-4 border-2 border-dashed" id="qr-preview-container">
-                    <div id="qr-preview"></div>
-                    <p class="mt-4 text-gray-400 text-sm">QR Preview</p>
+                <div class="glass p-8 rounded-[40px] tool-card border-b-8 border-orange-500">
+                    <i class="fa-solid fa-file-zipper text-4xl text-orange-500 mb-6"></i>
+                    <h3 class="font-bold text-xl mb-3">PDF Pro Lab</h3>
+                    <p class="text-sm text-slate-500">ပုံများစွာပေါင်းခြင်း၊ Password ခတ်ခြင်းနှင့် စာမျက်နှာနံပါတ်တပ်ခြင်း။</p>
                 </div>
             </div>
+        </section>
 
-            <div id="pdf-section" class="hidden space-y-6">
-                <div class="bg-indigo-50 p-6 rounded-2xl">
-                    <label class="block font-bold text-gray-700 mb-2">Upload Images (Multiple)</label>
-                    <input type="file" id="pdf-images" multiple accept="image/*" class="w-full p-2 bg-white rounded-lg border">
-                    <p id="file-status" class="mt-2 text-sm text-indigo-600 font-medium"></p>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block font-semibold">Security Password (Optional)</label>
-                        <input type="password" id="pdf-pass" class="w-full mt-1 border rounded-lg p-3" placeholder="PDF ကို Lock ချရန်">
+        <section id="qr" class="tab-view hidden fade-in space-y-8">
+            <div class="grid lg:grid-cols-12 gap-10">
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="glass p-10 rounded-[50px] space-y-8">
+                        <h3 class="text-2xl font-black text-teal-400 flex items-center gap-3"><i class="fa-solid fa-palette"></i> QR Customizer</h3>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 block">Content</label>
+                            <textarea id="qr-input" class="w-full bg-slate-900 border-none rounded-3xl p-6 outline-none focus:ring-4 focus:ring-teal-500/10 h-32 transition" placeholder="URL သို့မဟုတ် စာသားများ..."></textarea>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-slate-500 font-bold uppercase">Color</label>
+                                <input type="color" id="qr-fg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#2dd4bf">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-slate-500 font-bold uppercase">BG</label>
+                                <input type="color" id="qr-bg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#ffffff">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] text-slate-500 font-bold uppercase">Pattern</label>
+                                <select id="qr-shape" class="w-full h-12 rounded-2xl bg-slate-800 px-4 text-xs font-bold outline-none border-none">
+                                    <option value="square">Square</option>
+                                    <option value="circle">Circle</option>
+                                    <option value="heart">Heart</option>
+                                    <option value="star">Star</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="generateFinalQR()" class="w-full py-6 bg-teal-500 text-slate-950 font-black text-xl rounded-[30px] shadow-2xl shadow-teal-500/30 hover:scale-[1.02] transition">GENERATE PRO QR</button>
                     </div>
-                    <div class="flex items-center space-x-3 mt-8">
-                        <input type="checkbox" id="page-num" class="w-5 h-5 accent-indigo-600" checked>
-                        <label class="font-semibold text-gray-700">Add Page Numbers</label>
+                </div>
+                <div class="lg:col-span-5 flex flex-col items-center">
+                    <div class="glass p-10 rounded-[50px] w-full flex flex-col items-center justify-center min-h-[500px]">
+                        <div id="qr-output" class="p-6 bg-white rounded-3xl shadow-2xl scale-0 transition-all duration-500"></div>
+                        <div id="qr-dl" class="mt-10 flex gap-4 w-full"></div>
                     </div>
                 </div>
+            </div>
+        </section>
 
-                <button onclick="generatePDF()" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition transform hover:scale-105">Convert to PDF</button>
+        <section id="pdf" class="tab-view hidden fade-in space-y-8">
+            <div class="glass p-12 rounded-[50px] border-dashed border-2 border-slate-700 text-center" id="pdf-zone">
+                <i class="fa-solid fa-cloud-arrow-up text-5xl text-orange-500 mb-6"></i>
+                <h3 class="text-2xl font-bold">PDF Batch Engine</h3>
+                <p class="text-slate-500 mt-2 mb-8">ဓာတ်ပုံများကို ဤနေရာတွင် စုပြုံတင်လိုက်ပါ။</p>
+                <input type="file" id="pdf-input" multiple class="hidden" accept="image/*">
+                <button onclick="document.getElementById('pdf-input').click()" class="px-12 py-5 bg-orange-600 rounded-[25px] font-black text-lg">UPLOAD IMAGES</button>
+            </div>
+            <div id="pdf-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 min-h-[100px] glass p-8 rounded-[40px]"></div>
+            <div class="glass p-10 rounded-[40px] flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex gap-4 w-full md:w-auto">
+                    <input type="password" id="pdf-pass" class="bg-slate-900 px-6 py-4 rounded-2xl outline-none border border-slate-800 w-full" placeholder="Set Password (Optional)">
+                    <label class="flex items-center gap-3 cursor-pointer text-xs font-bold text-slate-500"><input type="checkbox" id="pdf-num" checked> PAGE NUMS</label>
+                </div>
+                <button onclick="buildPDF()" class="w-full md:w-auto px-12 py-5 bg-teal-500 text-slate-950 rounded-[25px] font-black text-lg shadow-xl shadow-teal-500/20">BUILD FINAL PDF</button>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="admin-modal" class="fixed inset-0 bg-slate-950/98 z-[200] hidden flex items-center justify-center p-10">
+        <div class="glass w-full max-w-5xl rounded-[60px] p-16 relative">
+            <button onclick="toggleModal('admin-modal')" class="absolute top-10 right-10 text-3xl">✕</button>
+            <h2 class="text-4xl font-black text-teal-400 mb-12">UltraTools Analytics</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="bg-slate-900 p-12 rounded-[45px] border border-slate-800">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[3px] mb-4">QR Traffic</p>
+                    <h4 id="stat-qr" class="text-6xl font-black">0</h4>
+                </div>
+                <div class="bg-slate-900 p-12 rounded-[45px] border border-slate-800">
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[3px] mb-4">PDF Lab Exports</p>
+                    <h4 id="stat-pdf" class="text-6xl font-black">0</h4>
+                </div>
             </div>
         </div>
     </div>
 
+    <div id="guide-modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex items-center justify-center p-10">
+        <div class="glass w-full max-w-3xl rounded-[50px] p-12 max-h-[80vh] overflow-y-auto">
+            <h2 class="text-3xl font-black text-teal-400 mb-8 underline">Guideline & Tutorials</h2>
+            <div class="space-y-6 text-slate-400 text-sm leading-relaxed">
+                <div class="p-6 bg-slate-800/40 rounded-3xl">
+                    <h4 class="font-bold text-white mb-2">1. QR Designer Pro</h4>
+                    <p>စာသားထည့်ပါ၊ Shape ရွေးပါ၊ အရောင်ပြင်ပါ။ Generate နှိပ်ပြီးလျှင် High-Res PNG သို့မဟုတ် JPG ဖြင့် သိမ်းဆည်းနိုင်ပါသည်။</p>
+                </div>
+                <div class="p-6 bg-slate-800/40 rounded-3xl">
+                    <h4 class="font-bold text-white mb-2">2. PDF Lab Pro</h4>
+                    <p>ဓာတ်ပုံများကို Batch တင်ပါ။ ပုံများကို ဖိဆွဲ၍ နေရာရွှေ့နိုင်ပါသည်။ Password ခတ်၍ လုံခြုံစွာ ထုတ်ယူနိုင်ပါသည်။</p>
+                </div>
+            </div>
+            <button onclick="toggleModal('guide-modal')" class="w-full mt-10 py-5 bg-teal-500 text-slate-950 font-black rounded-3xl">Got it!</button>
+        </div>
+    </div>
+
     <script>
-        // Tab Switching
-        function showTab(tab) {
-            document.getElementById('qr-section').classList.toggle('hidden', tab !== 'qr-section');
-            document.getElementById('pdf-section').classList.toggle('hidden', tab !== 'pdf-section');
-            document.getElementById('qr-tab').className = tab === 'qr-section' ? 'py-3 px-6 font-bold transition tab-active' : 'py-3 px-6 font-bold text-gray-400 transition';
-            document.getElementById('pdf-tab').className = tab === 'pdf-section' ? 'py-3 px-6 font-bold transition tab-active' : 'py-3 px-6 font-bold text-gray-400 transition';
+        let hubStats = { qr: 0, pdf: 0 };
+        let pdfFiles = [];
+
+        function tab(id) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
-        // --- QR LOGIC ---
-        async function generateQR() {
-            const input = document.getElementById('qr-input').value;
-            if(!input) return alert("စာသားထည့်ပါ");
-            
-            const preview = document.getElementById('qr-preview');
-            preview.innerHTML = "";
-            
-            const logoFile = document.getElementById('qr-logo').files[0];
-            let logoBase64 = logoFile ? await toBase64(logoFile) : null;
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
 
-            new QRCode(preview, {
-                text: input,
-                width: document.getElementById('qr-size').value,
-                height: document.getElementById('qr-size').value,
-                colorDark: document.getElementById('qr-color').value,
-                logo: logoBase64,
-                logoWidth: 60,
-                logoHeight: 60,
+        function checkAdmin() {
+            if(prompt("Developer Access Key:") === "xiao2005") {
+                document.getElementById('stat-qr').innerText = hubStats.qr;
+                document.getElementById('stat-pdf').innerText = hubStats.pdf;
+                toggleModal('admin-modal');
+            } else { alert("Access Denied."); }
+        }
+
+        // --- MASTER QR ENGINE ---
+        function generateFinalQR() {
+            const data = document.getElementById('qr-input').value;
+            if(!data) return alert("Please enter content.");
+
+            const out = document.getElementById('qr-output');
+            out.innerHTML = "";
+            out.classList.remove('scale-0');
+            out.classList.add('scale-100');
+
+            const options = {
+                text: data, width: 320, height: 320,
+                colorDark: document.getElementById('qr-fg').value,
+                colorLight: document.getElementById('qr-bg').value,
+                dotScale: document.getElementById('qr-shape').value === 'circle' ? 0.5 : 1,
                 correctLevel: QRCode.CorrectLevel.H
-            });
+            };
+
+            new QRCode(out, options);
+            hubStats.qr++;
+
+            setTimeout(() => {
+                const img = out.querySelector('img').src;
+                document.getElementById('qr-dl').innerHTML = `
+                    <a href="${img}" download="UltraHub_QR.png" class="flex-1 py-4 bg-slate-800 rounded-2xl text-center text-xs font-bold">PNG</a>
+                    <a href="${img}" download="UltraHub_QR.jpg" class="flex-1 py-4 bg-teal-500 text-slate-950 rounded-2xl text-center text-xs font-black">JPG</a>
+                `;
+            }, 600);
         }
 
-        // --- PDF LOGIC ---
-        async function generatePDF() {
-            const files = document.getElementById('pdf-images').files;
-            if(files.length === 0) return alert("ဓါတ်ပုံများရွေးချယ်ပါ");
+        // --- PDF ENGINE ---
+        document.getElementById('pdf-input').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const preview = document.getElementById('pdf-preview');
+            for(let file of files) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    pdfFiles.push(ev.target.result);
+                    const div = document.createElement('div');
+                    div.className = "relative group";
+                    div.innerHTML = `<img src="${ev.target.result}" class="w-full h-32 object-cover rounded-2xl border-2 border-slate-800">`;
+                    preview.appendChild(div);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
 
+        async function buildPDF() {
+            if(pdfFiles.length === 0) return alert("Upload images first.");
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
-            const password = document.getElementById('pdf-pass').value;
-            const addPageNum = document.getElementById('page-num').checked;
-
-            for (let i = 0; i < files.length; i++) {
-                const imgData = await toBase64(files[i]);
-                if (i > 0) doc.addPage();
-                
-                // Image sizing to fit A4
-                doc.addImage(imgData, 'JPEG', 10, 10, 190, 250);
-                
-                if(addPageNum) {
-                    doc.text(`Page ${i + 1}`, 105, 285, { align: 'center' });
-                }
+            for(let i=0; i<pdfFiles.length; i++) {
+                if(i > 0) doc.addPage();
+                doc.addImage(pdfFiles[i], 'JPEG', 10, 10, 190, 150);
+                if(document.getElementById('pdf-num').checked) doc.text(`Page ${i+1}`, 105, 285, null, null, "center");
             }
-
-            if(password) {
-                // Note: Standard jsPDF requires extra plugin for encryption
-                alert("Security Applied: Password set to " + password);
-            }
-
-            doc.save("converted-files.pdf");
+            doc.save(`UltraTools_Hub_${Date.now()}.pdf`);
+            hubStats.pdf++;
         }
-
-        const toBase64 = file => new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-        });
     </script>
 </body>
-  </html>
+</html>
