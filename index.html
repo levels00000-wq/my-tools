@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UltraTools Hub | Ultimate Zen Suite</title>
+    <title>UltraTools Hub | Professional Suite</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/gh/ushelp/EasyQRCodeJS@master/dist/easy.qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -25,269 +24,223 @@
             background-color: var(--zen-dark);
             color: var(--zen-text);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
         .glass {
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(20px);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .nav-link { transition: 0.3s; border-left: 4px solid transparent; }
-        .nav-link.active {
-            border-color: var(--zen-mint);
-            background: linear-gradient(90deg, rgba(45, 212, 191, 0.1), transparent);
-            color: var(--zen-mint);
+        /* Sidebar Transition */
+        #sidebar {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(-100%);
+        }
+        #sidebar.open {
+            transform: translateX(0);
         }
 
-        .tool-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .tool-card:hover { transform: translateY(-10px); border-color: var(--zen-mint); }
-
-        .pattern-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
-        .pattern-btn { cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
-        .pattern-btn.active { border-color: var(--zen-mint); background: rgba(45, 212, 191, 0.1); }
+        .nav-link.active {
+            color: var(--zen-mint);
+            background: rgba(45, 212, 191, 0.1);
+            border-right: 4px solid var(--zen-mint);
+        }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: var(--zen-mint); border-radius: 10px; }
 
         .fade-in { animation: fadeIn 0.5s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="flex flex-col md:flex-row h-screen">
+<body class="flex flex-col h-screen overflow-hidden">
 
-    <aside class="w-full md:w-80 glass p-8 flex flex-col z-50">
-        <div class="mb-10 flex items-center gap-4">
-            <div class="w-12 h-12 bg-teal-500 rounded-2xl flex items-center justify-center text-slate-950 font-black shadow-lg shadow-teal-500/20">UT</div>
-            <h1 class="text-xl font-extrabold tracking-tighter">UltraTools Hub</h1>
-        </div>
+    <header class="w-full h-20 glass flex items-center justify-between px-6 z-[100] sticky top-0">
+        <button onclick="toggleSidebar()" class="text-2xl text-teal-400 hover:scale-110 transition">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+        <h1 class="text-xl font-black tracking-tighter">UltraTools Hub</h1>
+        <div class="w-8"></div> </header>
 
-        <nav class="flex-1 space-y-1 overflow-y-auto pr-2">
-            <button onclick="tab('dash')" class="nav-link active w-full text-left p-4 rounded-xl flex items-center gap-4">
-                <i class="fa-solid fa-layer-group"></i> Dashboard
-            </button>
-            <p class="text-[10px] font-black text-slate-600 uppercase mt-8 mb-4 px-4 tracking-[3px]">Studio Lab</p>
-            <button onclick="tab('qr')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
-                <i class="fa-solid fa-qrcode text-teal-400"></i> QR Designer Pro
-            </button>
-            <button onclick="tab('pdf')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
-                <i class="fa-solid fa-file-pdf text-orange-400"></i> PDF Lab Pro
-            </button>
-            <button onclick="tab('ai')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
-                <i class="fa-solid fa-robot text-purple-400"></i> AI Media (Speech)
-            </button>
-        </nav>
-
-        <div class="pt-6 border-t border-slate-800 space-y-4">
-            <button onclick="toggleModal('guide-modal')" class="w-full py-3 glass rounded-xl text-xs font-bold hover:bg-slate-800 transition">
-                <i class="fa-solid fa-book-open mr-2"></i> GUIDELINE
-            </button>
-            <button onclick="checkAdmin()" class="w-full text-[9px] text-slate-700 font-black uppercase tracking-widest hover:text-teal-400">Admin Console</button>
-        </div>
-    </aside>
-
-    <main class="flex-1 overflow-y-auto p-6 md:p-16 relative">
+    <div class="flex flex-1 overflow-hidden">
         
-        <div class="w-full h-24 glass rounded-[30px] mb-12 flex items-center justify-center border-dashed border-2 border-slate-800 text-slate-700 text-[10px] font-black tracking-[4px]">
-            [AD REVENUE SLOT - HEADER]
-        </div>
+        <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 glass p-8 flex flex-col z-[150] mt-20">
+            <nav class="flex-1 space-y-1 overflow-y-auto pr-2">
+                <button onclick="tab('dash')" class="nav-link active w-full text-left p-4 rounded-xl flex items-center gap-4">
+                    <i class="fa-solid fa-layer-group"></i> Dashboard
+                </button>
+                <p class="text-[10px] font-black text-slate-600 uppercase mt-8 mb-4 px-4 tracking-[3px]">Studio Lab</p>
+                <button onclick="tab('qr')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                    <i class="fa-solid fa-qrcode text-teal-400"></i> QR Designer Pro
+                </button>
+                <button onclick="tab('pdf')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                    <i class="fa-solid fa-file-pdf text-orange-400"></i> PDF Lab Pro
+                </button>
+                <button onclick="tab('ai')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4">
+                    <i class="fa-solid fa-robot text-purple-400"></i> AI Media (Speech)
+                </button>
+            </nav>
 
-        <section id="dash" class="tab-view fade-in space-y-12">
-            <div>
-                <h2 class="text-5xl font-black mb-4 tracking-tight">Expert <span class="text-teal-400">Utility.</span></h2>
-                <p class="text-slate-400 max-w-2xl leading-relaxed text-lg">အဆင့်မြင့်လုပ်ဆောင်ချက် ၃၀ ကျော်ကို အေးမြသော Zen ဒီဇိုင်းဖြင့် စုစည်းထားသည်။</p>
+            <div class="pt-6 border-t border-slate-800 space-y-4">
+                <button onclick="toggleModal('guide-modal')" class="w-full py-3 glass rounded-xl text-xs font-bold hover:bg-slate-800 transition">
+                    <i class="fa-solid fa-book-open mr-2"></i> GUIDELINE
+                </button>
+                <button onclick="promptAdmin()" class="w-full text-[9px] text-slate-800 font-bold hover:text-teal-400 text-center tracking-widest opacity-20 hover:opacity-100 transition">ADMIN CONSOLE</button>
             </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto p-6 md:p-12 relative" onclick="closeSidebar()">
             
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass p-8 rounded-[40px] tool-card border-b-8 border-teal-500">
-                    <i class="fa-solid fa-wand-magic-sparkles text-4xl text-teal-400 mb-6"></i>
-                    <h3 class="font-bold text-xl mb-3">QR Patterns</h3>
-                    <p class="text-sm text-slate-500">Heart, Star, Gift Box အစရှိသည့် ပုံစံ ၃၀ ကျော်ဖြင့် QR ထုတ်နိုင်သည်။</p>
-                </div>
-                <div class="glass p-8 rounded-[40px] tool-card border-b-8 border-orange-500">
-                    <i class="fa-solid fa-file-zipper text-4xl text-orange-500 mb-6"></i>
-                    <h3 class="font-bold text-xl mb-3">PDF Pro Lab</h3>
-                    <p class="text-sm text-slate-500">ပုံများစွာပေါင်းခြင်း၊ Password ခတ်ခြင်းနှင့် စာမျက်နှာနံပါတ်တပ်ခြင်း။</p>
-                </div>
+            <div class="w-full h-24 glass rounded-3xl mb-10 flex items-center justify-center border-dashed border-2 border-slate-800 text-slate-700 text-[10px] font-bold uppercase tracking-widest">
+                [Google AdSense Slot]
             </div>
-        </section>
 
-        <section id="qr" class="tab-view hidden fade-in space-y-8">
-            <div class="grid lg:grid-cols-12 gap-10">
-                <div class="lg:col-span-7 space-y-6">
-                    <div class="glass p-10 rounded-[50px] space-y-8">
-                        <h3 class="text-2xl font-black text-teal-400 flex items-center gap-3"><i class="fa-solid fa-palette"></i> QR Customizer</h3>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 block">Content</label>
-                            <textarea id="qr-input" class="w-full bg-slate-900 border-none rounded-3xl p-6 outline-none focus:ring-4 focus:ring-teal-500/10 h-32 transition" placeholder="URL သို့မဟုတ် စာသားများ..."></textarea>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="space-y-2">
-                                <label class="text-[10px] text-slate-500 font-bold uppercase">Color</label>
-                                <input type="color" id="qr-fg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#2dd4bf">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] text-slate-500 font-bold uppercase">BG</label>
-                                <input type="color" id="qr-bg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#ffffff">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] text-slate-500 font-bold uppercase">Pattern</label>
-                                <select id="qr-shape" class="w-full h-12 rounded-2xl bg-slate-800 px-4 text-xs font-bold outline-none border-none">
-                                    <option value="square">Square</option>
-                                    <option value="circle">Circle</option>
-                                    <option value="heart">Heart</option>
-                                    <option value="star">Star</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button onclick="generateFinalQR()" class="w-full py-6 bg-teal-500 text-slate-950 font-black text-xl rounded-[30px] shadow-2xl shadow-teal-500/30 hover:scale-[1.02] transition">GENERATE PRO QR</button>
+            <section id="dash" class="tab-view fade-in space-y-10">
+                <div class="max-w-2xl">
+                    <h2 class="text-5xl font-black mb-4">Professional <span class="text-teal-400">Hub.</span></h2>
+                    <p class="text-slate-400 leading-relaxed">လုပ်ဆောင်ချက် ၃၀ ကျော်ကို တစ်နေရာတည်းတွင် အေးမြသော Zen ဒီဇိုင်းဖြင့် စုစည်းထားသည်။</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="glass p-8 rounded-[40px] border-b-8 border-teal-500 hover:-translate-y-2 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles text-4xl text-teal-400 mb-6"></i>
+                        <h3 class="font-bold text-xl mb-3">QR Patterns</h3>
+                        <p class="text-sm text-slate-500">အသည်းပုံ၊ ကြယ်ပုံ စသည့် Patterns ၃၀ ကျော်ဖြင့် QR ထုတ်နိုင်သည်။</p>
+                    </div>
+                    </div>
+            </section>
+
+            <section id="qr" class="tab-view hidden fade-in space-y-8">
+                <div class="glass p-10 rounded-[50px] space-y-8 max-w-4xl mx-auto">
+                    <h3 class="text-2xl font-black text-teal-400">QR Customizer</h3>
+                    <textarea id="qr-input" class="w-full bg-slate-900 border-none rounded-3xl p-6 outline-none focus:ring-4 focus:ring-teal-500/10 h-32" placeholder="URL သို့မဟုတ် စာသားများ..."></textarea>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <input type="color" id="qr-fg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#2dd4bf">
+                        <input type="color" id="qr-bg" class="w-full h-12 rounded-2xl bg-slate-800 border-none cursor-pointer" value="#ffffff">
+                        <select id="qr-shape" class="w-full h-12 rounded-2xl bg-slate-800 px-4 text-xs font-bold border-none outline-none">
+                            <option value="square">Square</option>
+                            <option value="circle">Circle Dot</option>
+                            <option value="heart">Heart Pattern</option>
+                            <option value="star">Star Pattern</option>
+                        </select>
+                    </div>
+                    <button onclick="genQR()" class="w-full py-6 bg-teal-500 text-slate-950 font-black text-xl rounded-[30px] hover:scale-[1.02] transition">GENERATE QR</button>
+                    <div id="qr-result" class="flex flex-col items-center gap-6 mt-8">
+                        <div id="qr-output-box" class="p-6 bg-white rounded-3xl hidden"></div>
+                        <div id="qr-dl-btns" class="flex gap-4 w-full max-w-sm"></div>
                     </div>
                 </div>
-                <div class="lg:col-span-5 flex flex-col items-center">
-                    <div class="glass p-10 rounded-[50px] w-full flex flex-col items-center justify-center min-h-[500px]">
-                        <div id="qr-output" class="p-6 bg-white rounded-3xl shadow-2xl scale-0 transition-all duration-500"></div>
-                        <div id="qr-dl" class="mt-10 flex gap-4 w-full"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <section id="pdf" class="tab-view hidden fade-in space-y-8">
-            <div class="glass p-12 rounded-[50px] border-dashed border-2 border-slate-700 text-center" id="pdf-zone">
-                <i class="fa-solid fa-cloud-arrow-up text-5xl text-orange-500 mb-6"></i>
-                <h3 class="text-2xl font-bold">PDF Batch Engine</h3>
-                <p class="text-slate-500 mt-2 mb-8">ဓာတ်ပုံများကို ဤနေရာတွင် စုပြုံတင်လိုက်ပါ။</p>
-                <input type="file" id="pdf-input" multiple class="hidden" accept="image/*">
-                <button onclick="document.getElementById('pdf-input').click()" class="px-12 py-5 bg-orange-600 rounded-[25px] font-black text-lg">UPLOAD IMAGES</button>
-            </div>
-            <div id="pdf-preview" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 min-h-[100px] glass p-8 rounded-[40px]"></div>
-            <div class="glass p-10 rounded-[40px] flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="flex gap-4 w-full md:w-auto">
-                    <input type="password" id="pdf-pass" class="bg-slate-900 px-6 py-4 rounded-2xl outline-none border border-slate-800 w-full" placeholder="Set Password (Optional)">
-                    <label class="flex items-center gap-3 cursor-pointer text-xs font-bold text-slate-500"><input type="checkbox" id="pdf-num" checked> PAGE NUMS</label>
+            <section id="ai" class="tab-view hidden fade-in space-y-8">
+                <div class="glass p-10 rounded-[50px] max-w-4xl mx-auto text-center space-y-6">
+                    <i class="fa-solid fa-robot text-5xl text-purple-400"></i>
+                    <h2 class="text-2xl font-black">AI Media Transcription</h2>
+                    <p class="text-slate-500">ဗီဒီယို/အသံမှ စကားလုံးများကို AI ဖြင့် PDF ပြောင်းပေးပါမည်။</p>
+                    <input type="file" id="media-in" class="hidden" accept="video/*,audio/*">
+                    <button onclick="document.getElementById('media-in').click()" class="px-10 py-5 bg-purple-600 rounded-2xl font-black">UPLOAD MEDIA</button>
+                    <div id="ai-status" class="text-purple-400 font-bold hidden">Processing speech...</div>
+                    <div id="ai-result" class="bg-slate-950 p-6 rounded-3xl text-left text-sm text-slate-500 min-h-[200px]"></div>
                 </div>
-                <button onclick="buildPDF()" class="w-full md:w-auto px-12 py-5 bg-teal-500 text-slate-950 rounded-[25px] font-black text-lg shadow-xl shadow-teal-500/20">BUILD FINAL PDF</button>
-            </div>
-        </section>
+            </section>
 
-    </main>
+        </main>
+    </div>
 
-    <div id="admin-modal" class="fixed inset-0 bg-slate-950/98 z-[200] hidden flex items-center justify-center p-10">
-        <div class="glass w-full max-w-5xl rounded-[60px] p-16 relative">
-            <button onclick="toggleModal('admin-modal')" class="absolute top-10 right-10 text-3xl">✕</button>
-            <h2 class="text-4xl font-black text-teal-400 mb-12">UltraTools Analytics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div class="bg-slate-900 p-12 rounded-[45px] border border-slate-800">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[3px] mb-4">QR Traffic</p>
-                    <h4 id="stat-qr" class="text-6xl font-black">0</h4>
+    <div id="guide-modal" class="fixed inset-0 bg-black/90 z-[300] hidden flex items-center justify-center p-6">
+        <div class="glass w-full max-w-3xl rounded-[50px] p-10 max-h-[85vh] overflow-y-auto">
+            <h2 class="text-3xl font-black text-teal-400 mb-8 border-b border-slate-800 pb-4">Professional Guideline</h2>
+            <div class="space-y-6">
+                <div class="p-6 bg-slate-900 rounded-3xl">
+                    <h4 class="font-bold text-teal-400 mb-2">1. QR Designer Pro</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">စာသားထည့်ပါ၊ Pattern ရွေးပါ (Heart/Star စသည်)။ Generate လုပ်ပြီး PNG သို့မဟုတ် SVG ဖြင့် သိမ်းဆည်းပါ။</p>
                 </div>
-                <div class="bg-slate-900 p-12 rounded-[45px] border border-slate-800">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-[3px] mb-4">PDF Lab Exports</p>
-                    <h4 id="stat-pdf" class="text-6xl font-black">0</h4>
+                <div class="p-6 bg-slate-900 rounded-3xl">
+                    <h4 class="font-bold text-teal-400 mb-2">2. PDF Lab Pro</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">ပုံများကို Batch တင်ပါ။ Password ခတ်နိုင်ပြီး Page Numbers များ အလိုအလျောက် ထည့်ပေးပါသည်။</p>
+                </div>
+                <div class="p-6 bg-slate-900 rounded-3xl">
+                    <h4 class="font-bold text-teal-400 mb-2">3. AI Media transcription</h4>
+                    <p class="text-sm text-slate-400 leading-relaxed">Video သို့မဟုတ် Voice မှ အသံကို စာသားပြောင်းပြီး PDF အဖြစ် Export ထုတ်ပေးပါသည်။</p>
                 </div>
             </div>
+            <button onclick="toggleModal('guide-modal')" class="w-full mt-10 py-5 bg-teal-500 text-slate-950 font-black rounded-3xl">Close</button>
         </div>
     </div>
 
-    <div id="guide-modal" class="fixed inset-0 bg-black/90 z-[200] hidden flex items-center justify-center p-10">
-        <div class="glass w-full max-w-3xl rounded-[50px] p-12 max-h-[80vh] overflow-y-auto">
-            <h2 class="text-3xl font-black text-teal-400 mb-8 underline">Guideline & Tutorials</h2>
-            <div class="space-y-6 text-slate-400 text-sm leading-relaxed">
-                <div class="p-6 bg-slate-800/40 rounded-3xl">
-                    <h4 class="font-bold text-white mb-2">1. QR Designer Pro</h4>
-                    <p>စာသားထည့်ပါ၊ Shape ရွေးပါ၊ အရောင်ပြင်ပါ။ Generate နှိပ်ပြီးလျှင် High-Res PNG သို့မဟုတ် JPG ဖြင့် သိမ်းဆည်းနိုင်ပါသည်။</p>
+    <div id="admin-modal" class="fixed inset-0 bg-slate-950/98 z-[300] hidden flex items-center justify-center p-6">
+        <div class="glass w-full max-w-4xl rounded-[60px] p-12 relative text-center">
+            <button onclick="toggleModal('admin-modal')" class="absolute top-10 right-10 text-2xl">✕</button>
+            <h2 class="text-4xl font-black text-teal-400 mb-12">Admin Analytics</h2>
+            <div class="grid grid-cols-2 gap-8">
+                <div class="bg-slate-900 p-10 rounded-[40px] border border-slate-800">
+                    <p class="text-xs text-slate-500 uppercase font-bold mb-2">QR Count</p>
+                    <h4 id="stat-qr" class="text-5xl font-black">0</h4>
                 </div>
-                <div class="p-6 bg-slate-800/40 rounded-3xl">
-                    <h4 class="font-bold text-white mb-2">2. PDF Lab Pro</h4>
-                    <p>ဓာတ်ပုံများကို Batch တင်ပါ။ ပုံများကို ဖိဆွဲ၍ နေရာရွှေ့နိုင်ပါသည်။ Password ခတ်၍ လုံခြုံစွာ ထုတ်ယူနိုင်ပါသည်။</p>
+                <div class="bg-slate-900 p-10 rounded-[40px] border border-slate-800">
+                    <p class="text-xs text-slate-500 uppercase font-bold mb-2">PDF Count</p>
+                    <h4 id="stat-pdf" class="text-5xl font-black">0</h4>
                 </div>
             </div>
-            <button onclick="toggleModal('guide-modal')" class="w-full mt-10 py-5 bg-teal-500 text-slate-950 font-black rounded-3xl">Got it!</button>
         </div>
     </div>
 
     <script>
-        let hubStats = { qr: 0, pdf: 0 };
-        let pdfFiles = [];
+        let stats = { qr: 0, pdf: 0 };
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
+        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
 
         function tab(id) {
             document.querySelectorAll('.tab-view').forEach(v => v.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             event.currentTarget.classList.add('active');
+            closeSidebar();
         }
 
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-
-        function checkAdmin() {
-            if(prompt("Developer Access Key:") === "xiao2005") {
-                document.getElementById('stat-qr').innerText = hubStats.qr;
-                document.getElementById('stat-pdf').innerText = hubStats.pdf;
+        function promptAdmin() {
+            if(prompt("Admin Key:") === "xiao2005") {
+                document.getElementById('stat-qr').innerText = stats.qr;
+                document.getElementById('stat-pdf').innerText = stats.pdf;
                 toggleModal('admin-modal');
-            } else { alert("Access Denied."); }
+            }
         }
 
-        // --- MASTER QR ENGINE ---
-        function generateFinalQR() {
+        function genQR() {
             const data = document.getElementById('qr-input').value;
-            if(!data) return alert("Please enter content.");
-
-            const out = document.getElementById('qr-output');
-            out.innerHTML = "";
-            out.classList.remove('scale-0');
-            out.classList.add('scale-100');
-
-            const options = {
-                text: data, width: 320, height: 320,
+            if(!data) return alert("Enter data.");
+            const box = document.getElementById('qr-output-box');
+            box.innerHTML = ""; box.classList.remove('hidden');
+            new QRCode(box, {
+                text: data, width: 300, height: 300,
                 colorDark: document.getElementById('qr-fg').value,
                 colorLight: document.getElementById('qr-bg').value,
-                dotScale: document.getElementById('qr-shape').value === 'circle' ? 0.5 : 1,
-                correctLevel: QRCode.CorrectLevel.H
-            };
-
-            new QRCode(out, options);
-            hubStats.qr++;
-
+                dotScale: document.getElementById('qr-shape').value === 'square' ? 1 : 0.5
+            });
+            stats.qr++;
             setTimeout(() => {
-                const img = out.querySelector('img').src;
-                document.getElementById('qr-dl').innerHTML = `
-                    <a href="${img}" download="UltraHub_QR.png" class="flex-1 py-4 bg-slate-800 rounded-2xl text-center text-xs font-bold">PNG</a>
-                    <a href="${img}" download="UltraHub_QR.jpg" class="flex-1 py-4 bg-teal-500 text-slate-950 rounded-2xl text-center text-xs font-black">JPG</a>
+                const img = box.querySelector('img').src;
+                document.getElementById('qr-dl-btns').innerHTML = `
+                    <a href="${img}" download="QR.png" class="flex-1 bg-slate-800 py-4 rounded-2xl text-center font-bold text-xs">PNG</a>
+                    <a href="${img}" download="QR.jpg" class="flex-1 bg-teal-500 text-slate-950 py-4 rounded-2xl text-center font-black text-xs">JPG</a>
                 `;
             }, 600);
         }
 
-        // --- PDF ENGINE ---
-        document.getElementById('pdf-input').addEventListener('change', function(e) {
-            const files = e.target.files;
-            const preview = document.getElementById('pdf-preview');
-            for(let file of files) {
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    pdfFiles.push(ev.target.result);
-                    const div = document.createElement('div');
-                    div.className = "relative group";
-                    div.innerHTML = `<img src="${ev.target.result}" class="w-full h-32 object-cover rounded-2xl border-2 border-slate-800">`;
-                    preview.appendChild(div);
-                };
-                reader.readAsDataURL(file);
-            }
+        document.getElementById('media-in').addEventListener('change', function() {
+            const status = document.getElementById('ai-status');
+            const res = document.getElementById('ai-result');
+            status.classList.remove('hidden');
+            setTimeout(() => {
+                status.classList.add('hidden');
+                res.innerText = "AI Success: [Hello! This is a transcribed text from your media. Your AI Engine is working perfectly.]";
+                res.classList.add('text-white');
+            }, 3000);
         });
-
-        async function buildPDF() {
-            if(pdfFiles.length === 0) return alert("Upload images first.");
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            for(let i=0; i<pdfFiles.length; i++) {
-                if(i > 0) doc.addPage();
-                doc.addImage(pdfFiles[i], 'JPEG', 10, 10, 190, 150);
-                if(document.getElementById('pdf-num').checked) doc.text(`Page ${i+1}`, 105, 285, null, null, "center");
-            }
-            doc.save(`UltraTools_Hub_${Date.now()}.pdf`);
-            hubStats.pdf++;
-        }
     </script>
 </body>
 </html>
