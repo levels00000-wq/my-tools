@@ -1,452 +1,294 @@
 <!DOCTYPE html>
-<html lang="my">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UltraTools Hub | Ultimate Zen Suite</title>
+    <title>Ultimate QR & PDF Master Suite</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/gh/ushelp/EasyQRCodeJS@master/dist/easy.qrcode.min.js"></script>
+    
+    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: { 850: '#151f32', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap');
-        
-        :root {
-            --zen-dark: #020617;
-            --zen-mint: #2dd4bf;
-            --zen-text: #f1f5f9;
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
-        body {
-            background-color: var(--zen-dark);
-            color: var(--zen-text);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            overflow-x: hidden;
-        }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(15, 23, 42, 0.75);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-        }
-
-        /* Sidebar Animation */
-        #sidebar {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            transform: translateX(-100%);
-        }
-        #sidebar.open { transform: translateX(0); }
-
-        .nav-link.active {
-            color: var(--zen-mint);
-            background: rgba(45, 212, 191, 0.1);
-            border-right: 4px solid var(--zen-mint);
-        }
-
-        /* Custom Inputs */
-        .input-zen {
-            background: #0f172a;
-            border: 1px solid #1e293b;
-            color: white;
-            transition: all 0.3s;
-        }
-        .input-zen:focus {
-            border-color: var(--zen-mint);
-            box-shadow: 0 0 15px rgba(45, 212, 191, 0.2);
-            outline: none;
-        }
-
-        /* Drag & Drop Styles */
-        .sortable-ghost { opacity: 0.4; background: #1e293b; }
-        .pdf-thumb { cursor: grab; position: relative; }
-        .pdf-thumb:active { cursor: grabbing; }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--zen-mint); border-radius: 10px; }
-        
-        /* Animations */
-        .fade-in { animation: fadeIn 0.5s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body class="bg-slate-900 text-slate-100 min-h-screen">
 
-    <header class="w-full h-20 glass flex items-center justify-between px-6 z-[100] sticky top-0">
-        <button onclick="toggleSidebar()" class="text-2xl text-teal-400 hover:text-white transition p-2">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="flex items-center gap-3">
-            <i class="fa-solid fa-layer-group text-teal-400"></i>
-            <h1 class="text-xl font-black tracking-tighter uppercase">UltraTools Hub</h1>
-        </div>
-        <div class="w-8"></div>
-    </header>
+    <div id="root"></div>
 
-    <div class="flex flex-1 overflow-hidden relative">
-        
-        <aside id="sidebar" class="fixed inset-y-0 left-0 w-80 glass p-6 flex flex-col z-[150] mt-20 shadow-2xl">
-            <nav class="flex-1 space-y-2 overflow-y-auto">
-                <button onclick="tab('dash')" class="nav-link active w-full text-left p-4 rounded-xl flex items-center gap-4 transition hover:bg-slate-800">
-                    <i class="fa-solid fa-house"></i> Dashboard
-                </button>
-                
-                <p class="text-[10px] font-black text-slate-500 uppercase mt-6 mb-2 px-4 tracking-[2px]">Studio Tools</p>
-                <button onclick="tab('qr')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4 transition hover:bg-slate-800">
-                    <i class="fa-solid fa-qrcode text-teal-400"></i> QR Designer Pro
-                </button>
-                <button onclick="tab('pdf')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4 transition hover:bg-slate-800">
-                    <i class="fa-solid fa-file-pdf text-orange-400"></i> PDF Lab Pro
-                </button>
-                <button onclick="tab('ai')" class="nav-link w-full text-left p-4 rounded-xl flex items-center gap-4 transition hover:bg-slate-800">
-                    <i class="fa-solid fa-microchip text-purple-400"></i> AI & Media
-                </button>
-            </nav>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        const { jsPDF } = window.jspdf;
 
-            <div class="pt-6 border-t border-slate-700 space-y-3">
-                <button onclick="toggleModal('guide-modal')" class="w-full py-4 glass rounded-xl text-xs font-bold hover:bg-slate-800 transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-book-open"></i> USER GUIDELINE
-                </button>
-                <button onclick="adminEntry()" class="w-full text-[9px] text-slate-600 font-bold hover:text-teal-400 tracking-widest uppercase py-2 opacity-50 hover:opacity-100">
-                    <i class="fa-solid fa-lock"></i> Admin Console
-                </button>
-            </div>
-        </aside>
+        // --- Icons (Simple SVG Components) ---
+        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+        const IconImage = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
+        const IconLock = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
+        const IconAdmin = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+        const IconHome = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-10 relative" onclick="closeSidebar()">
-            
-            <div class="w-full h-24 glass rounded-3xl mb-10 flex items-center justify-center border-dashed border border-slate-700 text-slate-600 text-[10px] font-bold tracking-widest uppercase">
-                [AdSense Revenue Space]
-            </div>
+        // --- QR Generator Module ---
+        const QRCodeGenerator = () => {
+            const [url, setUrl] = useState("https://google.com");
+            const [color, setColor] = useState("#3b82f6");
+            const [dotStyle, setDotStyle] = useState("dots");
+            const qrRef = useRef(null);
+            const qrCode = useRef(null);
 
-            <section id="dash" class="fade-in space-y-10">
-                <div class="max-w-4xl">
-                    <h2 class="text-5xl font-black mb-4 leading-tight">Professional <span class="text-teal-400">Zen Suite.</span></h2>
-                    <p class="text-slate-400 text-lg">အဆင့်မြင့်လုပ်ဆောင်ချက် ၃၀ ကျော်၊ AI စနစ်နှင့် လုံခြုံရေးအပြည့်ရှိသော Web Application။</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div onclick="tab('qr')" class="glass p-8 rounded-[40px] cursor-pointer hover:-translate-y-2 transition border-b-4 border-teal-500">
-                        <i class="fa-solid fa-qrcode text-4xl text-teal-400 mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">QR Designer</h3>
-                        <p class="text-xs text-slate-500">Pattern ၃၀၊ Logo နှင့် High-Res Download။</p>
-                    </div>
-                    <div onclick="tab('pdf')" class="glass p-8 rounded-[40px] cursor-pointer hover:-translate-y-2 transition border-b-4 border-orange-500">
-                        <i class="fa-solid fa-images text-4xl text-orange-500 mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">PDF Lab</h3>
-                        <p class="text-xs text-slate-500">Batch Images၊ Drag & Drop နှင့် Password Lock။</p>
-                    </div>
-                    <div onclick="tab('ai')" class="glass p-8 rounded-[40px] cursor-pointer hover:-translate-y-2 transition border-b-4 border-purple-500">
-                        <i class="fa-solid fa-robot text-4xl text-purple-500 mb-4"></i>
-                        <h3 class="font-bold text-xl mb-2">AI Media</h3>
-                        <p class="text-xs text-slate-500">Video/Voice to Text & PDF Transcription။</p>
-                    </div>
-                </div>
-            </section>
+            useEffect(() => {
+                qrCode.current = new QRCodeStyling({
+                    width: 300,
+                    height: 300,
+                    type: "svg",
+                    data: url,
+                    image: "",
+                    dotsOptions: { color: color, type: dotStyle },
+                    backgroundOptions: { color: "transparent" },
+                    imageOptions: { crossOrigin: "anonymous", margin: 10 }
+                });
+                qrCode.current.append(qrRef.current);
+            }, []);
 
-            <section id="qr" class="hidden fade-in space-y-8">
-                <div class="grid lg:grid-cols-12 gap-8">
-                    <div class="lg:col-span-7 space-y-6">
-                        <div class="glass p-8 rounded-[40px]">
-                            <h3 class="text-2xl font-black text-teal-400 mb-6"><i class="fa-solid fa-wand-sparkles"></i> Generator Config</h3>
-                            
-                            <div class="flex gap-4 mb-4 text-xs font-bold">
-                                <button class="text-teal-400 border-b-2 border-teal-400 pb-1">Text/Link</button>
-                                <button class="text-slate-500 hover:text-white pb-1" onclick="alert('Simulation: Image will be uploaded to cloud.')">Photo to QR</button>
-                                <button class="text-slate-500 hover:text-white pb-1" onclick="alert('Connects to WiFi Logic')">Wi-Fi</button>
+            useEffect(() => {
+                if (qrCode.current) {
+                    qrCode.current.update({
+                        data: url,
+                        dotsOptions: { color: color, type: dotStyle }
+                    });
+                }
+            }, [url, color, dotStyle]);
+
+            const downloadQR = () => qrCode.current.download({ extension: "png" });
+
+            return (
+                <div className="glass-panel p-6 rounded-xl shadow-xl">
+                    <h2 className="text-2xl font-bold mb-6 text-blue-400">QR Code Master</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-slate-400 mb-1">Content / Link</label>
+                                <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} 
+                                    className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 outline-none text-white"/>
                             </div>
-
-                            <textarea id="qr-text" class="input-zen w-full rounded-3xl p-5 h-32 mb-6" placeholder="စာသား၊ Website Link သို့မဟုတ် အချက်အလက်များထည့်ပါ..."></textarea>
-                            
-                            <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="text-[10px] uppercase font-bold text-slate-500">QR Color</label>
-                                    <input type="color" id="qr-color" value="#2dd4bf" class="w-full h-12 rounded-xl bg-transparent cursor-pointer">
+                                    <label className="block text-sm text-slate-400 mb-1">Color</label>
+                                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full h-12 rounded cursor-pointer bg-transparent"/>
                                 </div>
                                 <div>
-                                    <label class="text-[10px] uppercase font-bold text-slate-500">Background</label>
-                                    <input type="color" id="qr-bg" value="#ffffff" class="w-full h-12 rounded-xl bg-transparent cursor-pointer">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-slate-500">Pattern Style</label>
-                                    <select id="qr-pattern" class="input-zen w-full h-12 rounded-xl px-2 text-xs">
-                                        <option value="square">Standard Square</option>
-                                        <option value="round">Rounded Dots</option>
-                                        <option value="circle">Circle Bubble</option>
-                                        <option value="diamond">Diamond Cut</option>
+                                    <label className="block text-sm text-slate-400 mb-1">Style</label>
+                                    <select onChange={(e) => setDotStyle(e.target.value)} className="w-full h-12 p-2 bg-slate-800 border border-slate-700 rounded-lg text-white">
+                                        <option value="dots">Dots</option>
+                                        <option value="rounded">Rounded</option>
+                                        <option value="classy">Classy</option>
+                                        <option value="square">Square</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label class="text-[10px] uppercase font-bold text-slate-500">Logo (Optional)</label>
-                                    <input type="file" id="qr-logo" class="text-[9px] text-slate-500 mt-2">
-                                </div>
                             </div>
-
-                            <button onclick="generateQR()" class="w-full py-5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black rounded-3xl shadow-lg shadow-teal-500/30 transition transform active:scale-95">
-                                GENERATE MASTER QR
+                        </div>
+                        <div className="flex flex-col items-center justify-center bg-white/5 p-6 rounded-xl">
+                            <div ref={qrRef} className="bg-white p-4 rounded-lg shadow-lg"></div>
+                            <button onClick={downloadQR} className="mt-6 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full font-bold transition">
+                                <IconDownload /> Download PNG
                             </button>
                         </div>
                     </div>
+                </div>
+            );
+        };
 
-                    <div class="lg:col-span-5">
-                        <div class="glass p-8 rounded-[40px] flex flex-col items-center justify-center min-h-[500px]">
-                            <p class="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest">Live Preview</p>
-                            <div id="qr-output" class="bg-white p-4 rounded-3xl shadow-2xl transition-all scale-90"></div>
-                            
-                            <div id="qr-actions" class="mt-8 flex flex-col w-full gap-3 hidden">
-                                <p class="text-center text-teal-400 text-xs font-bold animate-pulse">✓ QR Ready to Download</p>
-                                <div class="flex gap-3">
-                                    <button onclick="downloadQR('png')" class="flex-1 py-4 bg-slate-800 hover:bg-slate-700 rounded-2xl font-bold text-xs">
-                                        <i class="fa-solid fa-download mr-2"></i> PNG
-                                    </button>
-                                    <button onclick="downloadQR('jpg')" class="flex-1 py-4 bg-slate-800 hover:bg-slate-700 rounded-2xl font-bold text-xs">
-                                        <i class="fa-solid fa-image mr-2"></i> JPG
-                                    </button>
-                                </div>
-                                <button class="py-4 bg-transparent border border-slate-700 rounded-2xl font-bold text-xs text-slate-500">
-                                    Download SVG (Vector)
-                                </button>
+        // --- PDF Tools Module ---
+        const PDFTools = () => {
+            const [images, setImages] = useState([]);
+            const [password, setPassword] = useState("");
+            const [usePassword, setUsePassword] = useState(false);
+
+            const handleImageUpload = (e) => {
+                const files = Array.from(e.target.files);
+                Promise.all(files.map(file => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.readAsDataURL(file);
+                    });
+                })).then(imgs => setImages(prev => [...prev, ...imgs]));
+            };
+
+            const generatePDF = () => {
+                const doc = new jsPDF();
+                if (usePassword && password) {
+                    alert(`Note: In this browser-only demo, the password "${password}" is simulated. Production apps use backend encryption.`);
+                }
+                images.forEach((imgData, index) => {
+                    if (index > 0) doc.addPage();
+                    const imgProps = doc.getImageProperties(imgData);
+                    const pdfWidth = doc.internal.pageSize.getWidth();
+                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                    doc.setFontSize(10);
+                    doc.text(`Page ${index + 1}`, 10, doc.internal.pageSize.getHeight() - 10);
+                });
+                doc.save("my-document.pdf");
+            };
+
+            return (
+                <div className="glass-panel p-6 rounded-xl shadow-xl mt-8 border-t-4 border-green-500">
+                    <h2 className="text-2xl font-bold mb-6 text-green-400">Photo to PDF Converter</h2>
+                    <div className="space-y-6">
+                        <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:bg-white/5 transition relative">
+                            <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                            <div className="flex flex-col items-center gap-2">
+                                <IconImage />
+                                <span className="text-lg">Drop images here or click to upload</span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </section>
+                        
+                        <div className="flex items-center gap-4 bg-slate-800 p-4 rounded-lg">
+                            <input type="checkbox" checked={usePassword} onChange={() => setUsePassword(!usePassword)} className="w-5 h-5 accent-green-500"/>
+                            <span className="text-sm">Password Protect</span>
+                            {usePassword && (
+                                <div className="flex items-center gap-2 flex-1 bg-slate-700 px-3 py-1 rounded">
+                                    <IconLock />
+                                    <input type="password" placeholder="Enter Password" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-transparent border-none w-full outline-none text-sm text-white"/>
+                                </div>
+                            )}
+                        </div>
 
-            <section id="pdf" class="hidden fade-in space-y-8">
-                <div class="glass p-10 rounded-[40px] border-dashed border-2 border-slate-700 text-center hover:border-orange-500 transition">
-                    <i class="fa-solid fa-cloud-arrow-up text-5xl text-orange-500 mb-4"></i>
-                    <h3 class="text-2xl font-bold">PDF Batch Processor</h3>
-                    <p class="text-slate-500 text-xs mt-2 mb-6">Upload multiple images. Drag to reorder.</p>
-                    <input type="file" id="pdf-files" multiple accept="image/*" class="hidden">
-                    <button onclick="document.getElementById('pdf-files').click()" class="px-10 py-4 bg-orange-600 rounded-full font-black text-sm hover:bg-orange-500 transition">SELECT IMAGES</button>
-                </div>
-
-                <div id="pdf-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    </div>
-
-                <div class="glass p-8 rounded-[30px] flex flex-col md:flex-row gap-6 items-center justify-between">
-                    <div class="flex gap-4 w-full md:w-auto">
-                        <input type="password" id="pdf-pass" placeholder="Set Password (Optional)" class="input-zen px-6 py-4 rounded-2xl w-full">
-                        <div class="flex items-center gap-2 px-4">
-                            <input type="checkbox" id="pdf-num" checked class="accent-orange-500 w-5 h-5">
-                            <label class="text-xs font-bold">Page No.</label>
+                        <button onClick={generatePDF} disabled={images.length === 0} className="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold disabled:opacity-50 transition">
+                            Generate PDF
+                        </button>
+                        
+                        <div className="grid grid-cols-4 gap-4">
+                            {images.map((img, i) => (
+                                <img key={i} src={img} className="w-full h-20 object-cover rounded border border-slate-600"/>
+                            ))}
                         </div>
                     </div>
-                    <button onclick="generatePDF()" class="w-full md:w-auto px-12 py-5 bg-white text-orange-600 font-black rounded-2xl hover:bg-gray-100 transition shadow-lg">
-                        CONVERT TO PDF
-                    </button>
                 </div>
-            </section>
+            );
+        };
 
-            <section id="ai" class="hidden fade-in space-y-8">
-                <div class="glass p-12 rounded-[50px] max-w-4xl mx-auto text-center">
-                    <div class="w-20 h-20 bg-purple-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fa-solid fa-microphone-lines text-4xl text-purple-400"></i>
+        // --- Admin Module ---
+        const AdminPanel = () => {
+            const [auth, setAuth] = useState(false);
+            const [pass, setPass] = useState("");
+
+            const login = () => {
+                if(pass === "xiao2005") setAuth(true);
+                else alert("Incorrect Password");
+            }
+
+            if(!auth) return (
+                <div className="flex flex-col items-center justify-center py-20">
+                    <div className="glass-panel p-8 rounded-xl w-96">
+                        <h2 className="text-xl font-bold mb-4">Admin Access</h2>
+                        <input type="password" placeholder="Enter Admin Password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full p-3 bg-slate-800 rounded mb-4 border border-slate-700 text-white"/>
+                        <button onClick={login} className="w-full bg-blue-600 py-2 rounded font-bold hover:bg-blue-700">Login</button>
                     </div>
-                    <h2 class="text-3xl font-black mb-4">AI Transcription Engine</h2>
-                    <p class="text-slate-400 text-sm mb-8">Video သို့မဟုတ် Voice မှ အသံများကို AI ဖြင့်စာသားပြောင်းပြီး PDF ထုတ်ပေးပါသည်။</p>
-                    
-                    <input type="file" id="ai-file" class="hidden" accept="audio/*,video/*">
-                    <button onclick="document.getElementById('ai-file').click()" class="w-full py-8 border-2 border-dashed border-purple-500/30 rounded-3xl hover:bg-purple-500/10 transition mb-8 flex flex-col items-center justify-center gap-3">
-                        <span class="font-bold text-purple-400">CLICK TO UPLOAD MEDIA</span>
-                        <span class="text-[10px] text-slate-500">MP3, WAV, MP4 Supported</span>
-                    </button>
+                </div>
+            )
 
-                    <div id="ai-loading" class="hidden mb-6">
-                        <div class="w-full bg-slate-800 rounded-full h-2 mb-2">
-                            <div class="bg-purple-500 h-2 rounded-full animate-pulse" style="width: 80%"></div>
+            return (
+                <div className="glass-panel p-8 rounded-xl mt-8 border-t-4 border-purple-500">
+                    <h2 className="text-3xl font-bold mb-8">Admin Dashboard</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                            <h3 className="text-slate-400 text-sm">Total Visitors</h3>
+                            <p className="text-3xl font-bold text-blue-400">12,450</p>
                         </div>
-                        <p class="text-xs text-purple-400 animate-pulse">AI is analyzing speech patterns...</p>
+                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                            <h3 className="text-slate-400 text-sm">PDFs Generated</h3>
+                            <p className="text-3xl font-bold text-green-400">3,200</p>
+                        </div>
+                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                            <h3 className="text-slate-400 text-sm">QR Codes</h3>
+                            <p className="text-3xl font-bold text-purple-400">5,100</p>
+                        </div>
                     </div>
-
-                    <div id="ai-result" class="bg-slate-950 p-6 rounded-3xl text-left text-sm text-slate-500 min-h-[150px] hidden"></div>
-                    <button id="ai-export" class="hidden mt-6 w-full py-4 bg-purple-600 rounded-2xl font-bold">EXPORT TRANSCRIPT PDF</button>
+                    {/* Simple CSS Chart */}
+                    <div className="bg-slate-800 p-6 rounded-xl">
+                        <h3 className="mb-4 font-bold">Weekly Activity</h3>
+                        <div className="flex items-end justify-between h-40 gap-2">
+                            {[40, 30, 60, 45, 80, 55, 70].map((h, i) => (
+                                <div key={i} className="w-full bg-blue-500/50 rounded-t hover:bg-blue-500 transition-all relative group" style={{height: `${h}%`}}>
+                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100">{h}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-between mt-2 text-xs text-slate-400">
+                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                        </div>
+                    </div>
                 </div>
-            </section>
+            );
+        };
 
-        </main>
-    </div>
+        // --- Main App ---
+        const App = () => {
+            const [view, setView] = useState('home'); // home | admin
 
-    <div id="guide-modal" class="fixed inset-0 bg-black/95 z-[300] hidden flex items-center justify-center p-6">
-        <div class="glass w-full max-w-3xl rounded-[40px] p-10 max-h-[85vh] overflow-y-auto relative">
-            <button onclick="toggleModal('guide-modal')" class="absolute top-8 right-8 text-2xl hover:text-red-500">✕</button>
-            <h2 class="text-3xl font-black text-teal-400 mb-8">User Manual</h2>
-            <div class="space-y-6">
-                <div class="p-6 bg-slate-900/50 rounded-3xl border border-slate-700">
-                    <h4 class="font-bold text-white mb-2"><i class="fa-solid fa-qrcode mr-2"></i> QR Studio</h4>
-                    <ul class="list-disc pl-5 text-sm text-slate-400 space-y-1">
-                        <li>Input: စာသား သို့မဟုတ် Link ထည့်ပါ။</li>
-                        <li>Style: Pattern နှင့် အရောင်ရွေးပါ။</li>
-                        <li>Download: Generate နှိပ်ပြီး PNG/JPG ခလုတ်ပေါ်လာလျှင် နှိပ်၍သိမ်းပါ။</li>
-                    </ul>
+            return (
+                <div className="container mx-auto px-4 py-8 max-w-5xl">
+                    <nav className="flex justify-between items-center mb-12 glass-panel p-4 rounded-full">
+                        <div className="font-bold text-xl px-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+                            Ultimate Suite
+                        </div>
+                        <div className="flex gap-4">
+                            <button onClick={() => setView('home')} className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${view === 'home' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
+                                <IconHome size={16}/> Home
+                            </button>
+                            <button onClick={() => setView('admin')} className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${view === 'admin' ? 'bg-purple-600' : 'hover:bg-slate-800'}`}>
+                                <IconAdmin size={16}/> Admin
+                            </button>
+                        </div>
+                    </nav>
+
+                    {view === 'home' ? (
+                        <div className="animate-fade-in space-y-8">
+                            <header className="text-center mb-8">
+                                <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Create, Convert, Manage.</h1>
+                                <p className="text-slate-400">The all-in-one professional tool for your digital needs.</p>
+                            </header>
+                            <QRCodeGenerator />
+                            <PDFTools />
+                        </div>
+                    ) : (
+                        <AdminPanel />
+                    )}
+
+                    <footer className="text-center mt-20 text-slate-600 text-sm">
+                        &copy; 2025 Ultimate QR & PDF Suite. All rights reserved.
+                    </footer>
                 </div>
-                <div class="p-6 bg-slate-900/50 rounded-3xl border border-slate-700">
-                    <h4 class="font-bold text-white mb-2"><i class="fa-solid fa-images mr-2"></i> PDF Lab</h4>
-                    <ul class="list-disc pl-5 text-sm text-slate-400 space-y-1">
-                        <li>Upload: ပုံများကို Select လုပ်ပါ။</li>
-                        <li>Reorder: ပုံများကို လက်ဖြင့်ဖိဆွဲ၍ (Drag & Drop) ရှေ့နောက်စီပါ။</li>
-                        <li>Security: Password ထည့်ပါက ဖိုင် Lock ကျပါမည်။</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+            );
+        };
 
-    <div id="admin-modal" class="fixed inset-0 bg-slate-950/98 z-[300] hidden flex items-center justify-center p-6">
-        <div class="glass w-full max-w-4xl rounded-[50px] p-12 relative text-center">
-            <button onclick="toggleModal('admin-modal')" class="absolute top-10 right-10 text-2xl">✕</button>
-            <h2 class="text-3xl font-black text-teal-400 mb-10">Admin Analytics</h2>
-            <div class="grid grid-cols-2 gap-8">
-                <div class="bg-slate-900 p-8 rounded-[40px]">
-                    <p class="text-xs text-slate-500 uppercase font-bold">QR Generated</p>
-                    <h4 id="stat-qr" class="text-6xl font-black text-white">0</h4>
-                </div>
-                <div class="bg-slate-900 p-8 rounded-[40px]">
-                    <p class="text-xs text-slate-500 uppercase font-bold">PDF Created</p>
-                    <h4 id="stat-pdf" class="text-6xl font-black text-white">0</h4>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // --- CORE UI LOGIC ---
-        let hubStats = { qr: 0, pdf: 0 };
-        let pdfFiles = []; // Stores Base64 images
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); }
-        function toggleModal(id) { document.getElementById(id).classList.toggle('hidden'); }
-        
-        function tab(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            closeSidebar();
-        }
-
-        function adminEntry() {
-            if(prompt("Admin Access Key:") === "xiao2005") {
-                document.getElementById('stat-qr').innerText = hubStats.qr;
-                document.getElementById('stat-pdf').innerText = hubStats.pdf;
-                toggleModal('admin-modal');
-            }
-        }
-
-        // --- QR CODE GENERATOR & DOWNLOAD FIX ---
-        let qrObject = null;
-
-        function generateQR() {
-            const text = document.getElementById('qr-text').value;
-            if(!text) return alert("Please enter text or link first.");
-
-            const container = document.getElementById('qr-output');
-            container.innerHTML = ""; // Clear old QR
-            document.getElementById('qr-actions').classList.add('hidden'); // Hide buttons temporarily
-
-            // Generate
-            qrObject = new QRCode(container, {
-                text: text,
-                width: 250,
-                height: 250,
-                colorDark: document.getElementById('qr-color').value,
-                colorLight: document.getElementById('qr-bg').value,
-                correctLevel: QRCode.CorrectLevel.H
-            });
-
-            hubStats.qr++;
-
-            // Show Download Buttons after slight delay to ensure rendering
-            setTimeout(() => {
-                document.getElementById('qr-actions').classList.remove('hidden');
-            }, 500);
-        }
-
-        // Fix: Download function that extracts image from Canvas
-        function downloadQR(format) {
-            const canvas = document.querySelector('#qr-output canvas');
-            if(!canvas) return alert("Generate QR first!");
-
-            const link = document.createElement('a');
-            link.download = `UltraTools-QR.${format}`;
-            link.href = canvas.toDataURL(`image/${format}`);
-            link.click();
-        }
-
-        // --- PDF LAB: DRAG & DROP REORDER ---
-        const pdfGrid = document.getElementById('pdf-grid');
-        new Sortable(pdfGrid, {
-            animation: 150,
-            ghostClass: 'sortable-ghost'
-        });
-
-        document.getElementById('pdf-files').addEventListener('change', function(e) {
-            const files = e.target.files;
-            for(let file of files) {
-                const reader = new FileReader();
-                reader.onload = function(evt) {
-                    const div = document.createElement('div');
-                    div.className = "pdf-thumb relative group rounded-2xl overflow-hidden h-32";
-                    div.innerHTML = `
-                        <img src="${evt.target.result}" class="w-full h-full object-cover">
-                        <button onclick="this.parentElement.remove()" class="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full text-xs hidden group-hover:block">✕</button>
-                    `;
-                    pdfGrid.appendChild(div);
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-
-        async function generatePDF() {
-            const images = document.querySelectorAll('.pdf-thumb img');
-            if(images.length === 0) return alert("Upload images first.");
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            images.forEach((img, index) => {
-                if(index > 0) doc.addPage();
-                doc.addImage(img.src, 'JPEG', 10, 10, 190, 150);
-                if(document.getElementById('pdf-num').checked) {
-                    doc.text(`Page ${index + 1}`, 105, 280, null, null, "center");
-                }
-            });
-
-            const pass = document.getElementById('pdf-pass').value;
-            if(pass) {
-                // Note: Standard jsPDF requires plugin for encryption, simulating logic here
-                alert("Note: Password protection set to '" + pass + "'. (Requires server-side processing for full AES-256 in browser)");
-            }
-
-            doc.save("UltraTools-Batch.pdf");
-            hubStats.pdf++;
-        }
-
-        // --- AI MEDIA SIMULATION ---
-        document.getElementById('ai-file').addEventListener('change', function() {
-            document.getElementById('ai-loading').classList.remove('hidden');
-            document.getElementById('ai-result').classList.add('hidden');
-            
-            setTimeout(() => {
-                document.getElementById('ai-loading').classList.add('hidden');
-                const result = document.getElementById('ai-result');
-                result.classList.remove('hidden');
-                result.innerHTML = `<span class="text-white font-bold">Transcription Complete:</span><br><br>"Welcome to UltraTools. This AI engine has successfully analyzed your media file. It detected clear speech patterns and converted them into this text block. You can now export this as a PDF document."`;
-                document.getElementById('ai-export').classList.remove('hidden');
-            }, 3000);
-        });
-
-        document.getElementById('ai-export').addEventListener('click', function() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text(document.getElementById('ai-result').innerText, 10, 10, { maxWidth: 180 });
-            doc.save("AI-Transcript.pdf");
-        });
- 
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
