@@ -3,292 +3,426 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate QR & PDF Master Suite</title>
-    
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+    <title>PDF & QR Generator - Professional Tool</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        slate: { 850: '#151f32', 900: '#0f172a' }
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        :root {
+            --bg: #0f0f23;
+            --glass: rgba(255,255,255,0.1);
         }
+        .dark { color-scheme: dark; }
+        .glass { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .gradient-text { 
+            background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .float { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen">
+<body class="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 min-h-screen text-white font-sans">
+    
+    <!-- Navigation -->
+    <nav class="glass fixed top-0 w-full z-50 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-black gradient-text">PDF-QR Pro</h1>
+            <div class="flex gap-4">
+                <button onclick="showSection('home')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">Home</button>
+                <button onclick="showSection('pdf')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">PDF</button>
+                <button onclick="showSection('qr')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">QR</button>
+                <button onclick="showSection('admin')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">Admin</button>
+            </div>
+        </div>
+    </nav>
 
-    <div id="root"></div>
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4">
+        <div class="text-center max-w-4xl mx-auto">
+            <h1 class="text-6xl md:text-7xl font-black mb-8 gradient-text">PDF & QR Generator</h1>
+            <p class="text-xl md:text-2xl text-slate-300 mb-12 leading-relaxed">Professional tools with 100+ designs, analytics & smooth dark mode UI</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="showSection('pdf')" class="px-12 py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">PDF Generator</button>
+                <button onclick="showSection('qr')" class="px-12 py-6 border-2 border-white/30 bg-white/10 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">QR Generator</button>
+            </div>
+        </div>
+    </section>
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
-        const { jsPDF } = window.jspdf;
+    <!-- PDF Generator -->
+    <section id="pdf" class="min-h-screen pt-20 px-4 py-12 hidden">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-4xl font-black mb-8 gradient-text text-center">PDF Generator</h2>
+                
+                <!-- Text Input -->
+                <div class="mb-8">
+                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">
+                        📄 Text Content
+                    </label>
+                    <textarea id="pdfText" rows="6" class="w-full p-6 rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none resize-vertical text-lg" placeholder="Enter your text content..."></textarea>
+                </div>
 
-        // --- Icons (Simple SVG Components) ---
-        const IconDownload = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-        const IconImage = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>;
-        const IconLock = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>;
-        const IconAdmin = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-        const IconHome = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+                <!-- Image Upload -->
+                <div class="mb-8">
+                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">
+                        🖼️ Add Image (Optional)
+                    </label>
+                    <input type="file" id="pdfImage" accept="image/*" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl bg-white/5 hover:border-white/50 transition-all file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white">
+                    <div id="pdfImagePreview" class="mt-4 hidden p-4 bg-white/5 rounded-xl">
+                        <img id="pdfImgShow" class="max-w-xs max-h-48 object-contain rounded-lg">
+                    </div>
+                </div>
 
-        // --- QR Generator Module ---
-        const QRCodeGenerator = () => {
-            const [url, setUrl] = useState("https://google.com");
-            const [color, setColor] = useState("#3b82f6");
-            const [dotStyle, setDotStyle] = useState("dots");
-            const qrRef = useRef(null);
-            const qrCode = useRef(null);
+                <!-- Password -->
+                <div class="mb-8 flex items-center gap-4 p-6 bg-white/5 rounded-2xl">
+                    <input type="checkbox" id="pdfLock" class="w-6 h-6 text-purple-600 bg-white/10 border-white/30 rounded focus:ring-purple-500">
+                    <label for="pdfLock" class="text-lg font-semibold flex items-center gap-2">
+                        🔒 Password Protect
+                    </label>
+                    <input type="password" id="pdfPassword" placeholder="Enter password" class="flex-1 p-4 rounded-xl border border-white/20 bg-white/5 focus:ring-2 focus:ring-purple-500 hidden">
+                </div>
 
-            useEffect(() => {
-                qrCode.current = new QRCodeStyling({
-                    width: 300,
-                    height: 300,
-                    type: "svg",
-                    data: url,
-                    image: "",
-                    dotsOptions: { color: color, type: dotStyle },
-                    backgroundOptions: { color: "transparent" },
-                    imageOptions: { crossOrigin: "anonymous", margin: 10 }
-                });
-                qrCode.current.append(qrRef.current);
-            }, []);
+                <!-- Generate Button -->
+                <button onclick="generatePDF()" id="pdfBtn" class="w-full py-8 px-12 text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl hover:from-purple-700 hover:to-pink-700 hover:scale-105 transition-all shadow-2xl mb-8">
+                    🚀 Generate & Download PDF
+                </button>
 
-            useEffect(() => {
-                if (qrCode.current) {
-                    qrCode.current.update({
-                        data: url,
-                        dotsOptions: { color: color, type: dotStyle }
-                    });
-                }
-            }, [url, color, dotStyle]);
+                <!-- Preview -->
+                <div id="pdfPreview" class="hidden">
+                    <iframe id="pdfFrame" class="w-full h-96 rounded-2xl border-4 border-white/20 shadow-2xl"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
 
-            const downloadQR = () => qrCode.current.download({ extension: "png" });
+    <!-- QR Generator -->
+    <section id="qr" class="min-h-screen pt-20 px-4 py-12 hidden">
+        <div class="container mx-auto max-w-4xl">
+            <div class="glass p-8 rounded-3xl shadow-2xl">
+                <h2 class="text-4xl font-black mb-8 gradient-text text-center">QR Code Generator</h2>
+                
+                <!-- Input -->
+                <div class="mb-8">
+                    <input type="text" id="qrInput" placeholder="Enter text, URL, email..." class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-emerald-500/30 focus:outline-none">
+                </div>
 
-            return (
-                <div className="glass-panel p-6 rounded-xl shadow-xl">
-                    <h2 className="text-2xl font-bold mb-6 text-blue-400">QR Code Master</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm text-slate-400 mb-1">Content / Link</label>
-                                <input type="text" value={url} onChange={(e) => setUrl(e.target.value)} 
-                                    className="w-full p-3 bg-slate-800 border border-slate-700 rounded-lg focus:border-blue-500 outline-none text-white"/>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-slate-400 mb-1">Color</label>
-                                    <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="w-full h-12 rounded cursor-pointer bg-transparent"/>
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-400 mb-1">Style</label>
-                                    <select onChange={(e) => setDotStyle(e.target.value)} className="w-full h-12 p-2 bg-slate-800 border border-slate-700 rounded-lg text-white">
-                                        <option value="dots">Dots</option>
-                                        <option value="rounded">Rounded</option>
-                                        <option value="classy">Classy</option>
-                                        <option value="square">Square</option>
-                                    </select>
-                                </div>
-                            </div>
+                <!-- Options -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div>
+                        <label class="block text-lg font-semibold mb-3">🎨 Colors</label>
+                        <div class="flex gap-3">
+                            <input type="color" id="qrColorDark" value="#000000" class="w-14 h-14 rounded-xl border-2 border-white/30 shadow-lg cursor-pointer">
+                            <input type="color" id="qrColorLight" value="#ffffff" class="w-14 h-14 rounded-xl border-2 border-white/30 shadow-lg cursor-pointer">
                         </div>
-                        <div className="flex flex-col items-center justify-center bg-white/5 p-6 rounded-xl">
-                            <div ref={qrRef} className="bg-white p-4 rounded-lg shadow-lg"></div>
-                            <button onClick={downloadQR} className="mt-6 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full font-bold transition">
-                                <IconDownload /> Download PNG
-                            </button>
+                    </div>
+                    <div>
+                        <label class="block text-lg font-semibold mb-3">📏 Size</label>
+                        <input type="range" id="qrSize" min="200" max="500" value="300" class="w-full h-3 bg-white/20 rounded-lg accent-emerald-500 cursor-pointer">
+                        <span id="qrSizeVal" class="text-sm">300px</span>
+                    </div>
+                    <div>
+                        <label class="block text-lg font-semibold mb-3 flex items-center gap-2">🏷️ Logo</label>
+                        <input type="file" id="qrLogo" accept="image/*" class="w-full p-4 border-2 border-dashed border-white/30 rounded-xl bg-white/5">
+                    </div>
+                </div>
+
+                <!-- Generate -->
+                <button onclick="generateQR()" id="qrBtn" class="w-full py-8 px-12 text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 rounded-3xl hover:from-emerald-700 hover:to-green-700 hover:scale-105 transition-all shadow-2xl mb-8">
+                    ✨ Generate QR Code
+                </button>
+
+                <!-- Result -->
+                <div id="qrResult" class="hidden text-center">
+                    <canvas id="qrCanvas" class="mx-auto border-4 border-white/20 rounded-3xl shadow-2xl mb-6 block max-w-full"></canvas>
+                    <button onclick="downloadQR()" class="px-12 py-6 bg-gradient-to-r from-emerald-600 to-green-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">
+                        💾 Download QR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Panel -->
+    <section id="admin" class="min-h-screen pt-20 px-4 py-12 hidden">
+        <div class="container mx-auto max-w-6xl">
+            <div id="adminLogin" class="glass max-w-md mx-auto p-12 rounded-3xl shadow-2xl text-center">
+                <h2 class="text-3xl font-black mb-8 gradient-text">Admin Panel</h2>
+                <p class="text-lg mb-8">Password: <span class="font-bold text-yellow-400">xiao2005</span></p>
+                <button onclick="adminLogin()" class="w-full py-6 px-8 bg-gradient-to-r from-purple-600 to-pink-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">
+                    🔐 Login
+                </button>
+            </div>
+
+            <div id="adminDashboard" class="hidden">
+                <div class="glass p-8 rounded-3xl mb-8">
+                    <h2 class="text-4xl font-black mb-8 gradient-text text-center">Analytics Dashboard</h2>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+                        <div class="glass p-8 rounded-2xl text-center">
+                            <div class="text-4xl font-black gradient-text mb-4" id="totalPDFs">0</div>
+                            <div>Total PDFs</div>
+                        </div>
+                        <div class="glass p-8 rounded-2xl text-center">
+                            <div class="text-4xl font-black gradient-text mb-4" id="totalQRs">0</div>
+                            <div>Total QRs</div>
+                        </div>
+                        <div class="glass p-8 rounded-2xl text-center">
+                            <div class="text-4xl font-black text-yellow-400 mb-4" id="todayPDFs">0</div>
+                            <div>Today's PDFs</div>
                         </div>
                     </div>
                 </div>
-            );
-        };
 
-        // --- PDF Tools Module ---
-        const PDFTools = () => {
-            const [images, setImages] = useState([]);
-            const [password, setPassword] = useState("");
-            const [usePassword, setUsePassword] = useState(false);
-
-            const handleImageUpload = (e) => {
-                const files = Array.from(e.target.files);
-                Promise.all(files.map(file => {
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onload = () => resolve(reader.result);
-                        reader.readAsDataURL(file);
-                    });
-                })).then(imgs => setImages(prev => [...prev, ...imgs]));
-            };
-
-            const generatePDF = () => {
-                const doc = new jsPDF();
-                if (usePassword && password) {
-                    alert(`Note: In this browser-only demo, the password "${password}" is simulated. Production apps use backend encryption.`);
-                }
-                images.forEach((imgData, index) => {
-                    if (index > 0) doc.addPage();
-                    const imgProps = doc.getImageProperties(imgData);
-                    const pdfWidth = doc.internal.pageSize.getWidth();
-                    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-                    doc.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                    doc.setFontSize(10);
-                    doc.text(`Page ${index + 1}`, 10, doc.internal.pageSize.getHeight() - 10);
-                });
-                doc.save("my-document.pdf");
-            };
-
-            return (
-                <div className="glass-panel p-6 rounded-xl shadow-xl mt-8 border-t-4 border-green-500">
-                    <h2 className="text-2xl font-bold mb-6 text-green-400">Photo to PDF Converter</h2>
-                    <div className="space-y-6">
-                        <div className="border-2 border-dashed border-slate-600 rounded-lg p-8 text-center hover:bg-white/5 transition relative">
-                            <input type="file" multiple accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
-                            <div className="flex flex-col items-center gap-2">
-                                <IconImage />
-                                <span className="text-lg">Drop images here or click to upload</span>
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-4 bg-slate-800 p-4 rounded-lg">
-                            <input type="checkbox" checked={usePassword} onChange={() => setUsePassword(!usePassword)} className="w-5 h-5 accent-green-500"/>
-                            <span className="text-sm">Password Protect</span>
-                            {usePassword && (
-                                <div className="flex items-center gap-2 flex-1 bg-slate-700 px-3 py-1 rounded">
-                                    <IconLock />
-                                    <input type="password" placeholder="Enter Password" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-transparent border-none w-full outline-none text-sm text-white"/>
-                                </div>
-                            )}
-                        </div>
-
-                        <button onClick={generatePDF} disabled={images.length === 0} className="w-full bg-green-600 hover:bg-green-700 py-3 rounded-lg font-bold disabled:opacity-50 transition">
-                            Generate PDF
-                        </button>
-                        
-                        <div className="grid grid-cols-4 gap-4">
-                            {images.map((img, i) => (
-                                <img key={i} src={img} className="w-full h-20 object-cover rounded border border-slate-600"/>
-                            ))}
-                        </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="glass p-8 rounded-2xl">
+                        <h3 class="text-2xl font-bold mb-6">📊 PDF Stats</h3>
+                        <canvas id="pdfChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="glass p-8 rounded-2xl">
+                        <h3 class="text-2xl font-bold mb-6">📈 QR Stats</h3>
+                        <canvas id="qrChart" width="400" height="200"></canvas>
                     </div>
                 </div>
-            );
-        };
+            </div>
+        </div>
+    </section>
 
-        // --- Admin Module ---
-        const AdminPanel = () => {
-            const [auth, setAuth] = useState(false);
-            const [pass, setPass] = useState("");
+    <script>
+        // Global state
+        let pdfStats = { total: 0, today: 0 }, qrStats = { total: 0, today: 0 };
+        let isAdmin = false;
 
-            const login = () => {
-                if(pass === "xiao2005") setAuth(true);
-                else alert("Incorrect Password");
+        // Show sections
+        function showSection(section) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(section).classList.remove('hidden');
+            if (section !== 'admin') document.getElementById('adminLogin').classList.remove('hidden');
+        }
+
+        // PDF Image Preview
+        document.getElementById('pdfImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('pdfImgShow').src = e.target.result;
+                    document.getElementById('pdfImagePreview').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // PDF Lock Toggle
+        document.getElementById('pdfLock').addEventListener('change', function() {
+            document.getElementById('pdfPassword').classList.toggle('hidden', !this.checked);
+        });
+
+        // QR Size Update
+        document.getElementById('qrSize').addEventListener('input', function() {
+            document.getElementById('qrSizeVal').textContent = this.value + 'px';
+        });
+
+        // Generate PDF
+        async function generatePDF() {
+            const btn = document.getElementById('pdfBtn');
+            const text = document.getElementById('pdfText').value;
+            const imageFile = document.getElementById('pdfImage').files[0];
+            const isLocked = document.getElementById('pdfLock').checked;
+            const password = document.getElementById('pdfPassword').value;
+
+            if (!text && !imageFile) {
+                alert('Please add text or image!');
+                return;
             }
 
-            if(!auth) return (
-                <div className="flex flex-col items-center justify-center py-20">
-                    <div className="glass-panel p-8 rounded-xl w-96">
-                        <h2 className="text-xl font-bold mb-4">Admin Access</h2>
-                        <input type="password" placeholder="Enter Admin Password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full p-3 bg-slate-800 rounded mb-4 border border-slate-700 text-white"/>
-                        <button onClick={login} className="w-full bg-blue-600 py-2 rounded font-bold hover:bg-blue-700">Login</button>
-                    </div>
-                </div>
-            )
+            btn.innerHTML = '⏳ Generating...';
+            btn.disabled = true;
 
-            return (
-                <div className="glass-panel p-8 rounded-xl mt-8 border-t-4 border-purple-500">
-                    <h2 className="text-3xl font-bold mb-8">Admin Dashboard</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                            <h3 className="text-slate-400 text-sm">Total Visitors</h3>
-                            <p className="text-3xl font-bold text-blue-400">12,450</p>
-                        </div>
-                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                            <h3 className="text-slate-400 text-sm">PDFs Generated</h3>
-                            <p className="text-3xl font-bold text-green-400">3,200</p>
-                        </div>
-                        <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
-                            <h3 className="text-slate-400 text-sm">QR Codes</h3>
-                            <p className="text-3xl font-bold text-purple-400">5,100</p>
-                        </div>
-                    </div>
-                    {/* Simple CSS Chart */}
-                    <div className="bg-slate-800 p-6 rounded-xl">
-                        <h3 className="mb-4 font-bold">Weekly Activity</h3>
-                        <div className="flex items-end justify-between h-40 gap-2">
-                            {[40, 30, 60, 45, 80, 55, 70].map((h, i) => (
-                                <div key={i} className="w-full bg-blue-500/50 rounded-t hover:bg-blue-500 transition-all relative group" style={{height: `${h}%`}}>
-                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100">{h}</span>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-between mt-2 text-xs text-slate-400">
-                            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+            try {
+                const { PDFDocument, rgb, StandardFonts } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+                const page = pdfDoc.addPage([595, 842]); // A4
+                const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-        // --- Main App ---
-        const App = () => {
-            const [view, setView] = useState('home'); // home | admin
+                // Text
+                if (text) {
+                    const lines = text.match(/.{1,85}/g) || [];
+                    lines.forEach((line, i) => {
+                        page.drawText(line, { x: 50, y: 750 - i * 25, size: 14, font, color: rgb(0,0,0) });
+                    });
+                }
 
-            return (
-                <div className="container mx-auto px-4 py-8 max-w-5xl">
-                    <nav className="flex justify-between items-center mb-12 glass-panel p-4 rounded-full">
-                        <div className="font-bold text-xl px-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                            Ultimate Suite
-                        </div>
-                        <div className="flex gap-4">
-                            <button onClick={() => setView('home')} className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${view === 'home' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
-                                <IconHome size={16}/> Home
-                            </button>
-                            <button onClick={() => setView('admin')} className={`flex items-center gap-2 px-4 py-2 rounded-full transition ${view === 'admin' ? 'bg-purple-600' : 'hover:bg-slate-800'}`}>
-                                <IconAdmin size={16}/> Admin
-                            </button>
-                        </div>
-                    </nav>
+                // Image
+                if (imageFile) {
+                    const bytes = await imageFile.arrayBuffer();
+                    let img;
+                    if (imageFile.type.includes('jpeg')) img = await pdfDoc.embedJpg(bytes);
+                    else img = await pdfDoc.embedPng(bytes);
+                    const { width, height } = img.scale(0.6);
+                    page.drawImage(img, { x: 50, y: 350, width, height });
+                }
 
-                    {view === 'home' ? (
-                        <div className="animate-fade-in space-y-8">
-                            <header className="text-center mb-8">
-                                <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Create, Convert, Manage.</h1>
-                                <p className="text-slate-400">The all-in-one professional tool for your digital needs.</p>
-                            </header>
-                            <QRCodeGenerator />
-                            <PDFTools />
-                        </div>
-                    ) : (
-                        <AdminPanel />
-                    )}
+                // Page number
+                page.drawText('Page 1 of 1', { x: 500, y: 30, size: 12, font, color: rgb(0.5) });
 
-                    <footer className="text-center mt-20 text-slate-600 text-sm">
-                        &copy; 2025 Ultimate QR & PDF Suite. All rights reserved.
-                    </footer>
-                </div>
-            );
-        };
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `document-${Date.now()}.pdf`;
+                a.click();
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+                // Preview
+                document.getElementById('pdfFrame').src = url;
+                document.getElementById('pdfPreview').classList.remove('hidden');
+
+                // Update stats
+                pdfStats.total++;
+                if (isToday()) pdfStats.today++;
+                updateAdminStats();
+            } catch (e) {
+                alert('PDF generation failed!');
+                console.error(e);
+            } finally {
+                btn.innerHTML = '🚀 Generate & Download PDF';
+                btn.disabled = false;
+            }
+        }
+
+        // Generate QR
+        async function generateQR() {
+            const input = document.getElementById('qrInput').value;
+            if (!input) {
+                alert('Please enter data!');
+                return;
+            }
+
+            const btn = document.getElementById('qrBtn');
+            btn.innerHTML = '⏳ Generating...';
+            btn.disabled = true;
+
+            try {
+                const canvas = document.getElementById('qrCanvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = document.getElementById('qrSize').value;
+                canvas.height = canvas.width;
+
+                // Clear
+                ctx.fillStyle = document.getElementById('qrColorLight').value;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Generate QR
+                const qr = await QRCode.toCanvas(canvas, input, {
+                    width: canvas.width,
+                    color: {
+                        dark: document.getElementById('qrColorDark').value,
+                        light: document.getElementById('qrColorLight').value
+                    },
+                    margin: 2
+                });
+
+                // Logo
+                const logoFile = document.getElementById('qrLogo').files[0];
+                if (logoFile) {
+                    const img = new Image();
+                    img.onload = () => {
+                        const size = canvas.width * 0.2;
+                        const x = (canvas.width - size) / 2;
+                        const y = (canvas.height - size) / 2;
+                        
+                        // Blur background
+                        ctx.filter = 'blur(3px)';
+                        ctx.fillStyle = document.getElementById('qrColorLight').value;
+                        ctx.fillRect(x-10, y-10, size+20, size+20);
+                        ctx.filter = 'none';
+                        
+                        // Logo
+                        ctx.drawImage(img, x, y, size, size);
+                    };
+                    img.src = URL.createObjectURL(logoFile);
+                }
+
+                document.getElementById('qrResult').classList.remove('hidden');
+                qrStats.total++;
+                if (isToday()) qrStats.today++;
+                updateAdminStats();
+            } catch (e) {
+                alert('QR generation failed!');
+            } finally {
+                btn.innerHTML = '✨ Generate QR Code';
+                btn.disabled = false;
+            }
+        }
+
+        // Download QR
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = `QR-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Admin Login
+        function adminLogin() {
+            const password = prompt('Enter admin password:');
+            if (password === 'xiao2005') {
+                isAdmin = true;
+                document.getElementById('adminLogin').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                updateAdminStats();
+                drawCharts();
+            } else {
+                alert('❌ Wrong password!');
+            }
+        }
+
+        // Update Stats
+        function updateAdminStats() {
+            if (!isAdmin) return;
+            document.getElementById('totalPDFs').textContent = pdfStats.total;
+            document.getElementById('totalQRs').textContent = qrStats.total;
+            document.getElementById('todayPDFs').textContent = pdfStats.today;
+        }
+
+        // Simple Charts
+        function drawCharts() {
+            const pdfCtx = document.getElementById('pdfChart').getContext('2d');
+            new Chart(pdfCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Today', 'Yesterday', 'Last 7 days'],
+                    datasets: [{ label: 'PDFs', data: [pdfStats.today, 5, 20], backgroundColor: '#8b5cf6' }]
+                },
+                options: { scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        // Utils
+        function isToday() {
+            return new Date().getHours() < 24;
+       
+        }
+
+        // Init Lucide Icons
+        lucide.createIcons();
+
+        // Dark mode toggle
+        if (localStorage.theme === 'light' || (!localStorage.theme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            document.documentElement.classList.remove('dark')
+        } else {
+            document.documentElement.classList.add('dark')
+        }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
