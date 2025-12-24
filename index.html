@@ -9,29 +9,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #0f0f23;
-            --glass: rgba(255,255,255,0.1);
-        }
+        :root { --bg: #0f0f23; --glass: rgba(255,255,255,0.1); }
         .dark { color-scheme: dark; }
-        .glass { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .gradient-text { 
-            background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
+        .gradient-text { background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .tab-active { background-color: rgba(139, 92, 246, 0.5) !important; color: #a78bfa !important; border: 1px solid #8b5cf6; }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .float { animation: float 3s ease-in-out infinite; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 min-h-screen text-white font-sans">
     
-    <!-- Navigation -->
     <nav class="glass fixed top-0 w-full z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-black gradient-text">PDF-QR Pro</h1>
@@ -44,13 +32,12 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
     <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4">
         <div class="text-center max-w-4xl mx-auto">
             <h1 class="text-6xl md:text-7xl font-black mb-8 gradient-text">PDF & QR Generator</h1>
             <p class="text-xl md:text-2xl text-slate-300 mb-12 leading-relaxed">
-                ✅ Text/Link/Photo → PDF + Password Protection<br>
-                ✅ Text/Link/Photo → QR + 100+ Designs/Colors/Logos<br>
+                ✅ Text/Link/Photo → PDF + Simple Formatting<br>
+                ✅ Text/Link/Photo → QR + Custom Logos/Colors<br>
                 ✅ Professional Analytics + Admin Control
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -60,647 +47,223 @@
         </div>
     </section>
 
-    <!-- PDF Generator - TEXT/PHOTO/LINK -->
     <section id="pdf" class="min-h-screen pt-20 px-4 py-12 hidden">
         <div class="container mx-auto max-w-4xl">
             <div class="glass p-8 rounded-3xl shadow-2xl">
                 <h2 class="text-4xl font-black mb-8 gradient-text text-center">PDF Generator</h2>
                 
-                <!-- Input Type Tabs -->
                 <div class="flex bg-white/5 rounded-xl p-1 mb-8">
-                    <button onclick="setPDFType('text')" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active:text-purple-400 tab-active:bg-purple-600/50">📝 Text</button>
-                    <button onclick="setPDFType('photo')" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
-                    <button onclick="setPDFType('link')" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
+                    <button onclick="setPDFType('text', event)" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active">📝 Text</button>
+                    <button onclick="setPDFType('photo', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
+                    <button onclick="setPDFType('link', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
                 </div>
 
-                <!-- Text Input -->
-                <div id="pdfTextInput" class="mb-8">
-                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">📝 Text Content</label>
-                    <textarea id="pdfTextContent" rows="6" class="w-full p-6 rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none resize-vertical text-lg" placeholder="Enter your text content..."></textarea>
+                <div id="pdfTextInput" class="pdf-input-group mb-8">
+                    <textarea id="pdfTextContent" rows="6" class="w-full p-6 rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none text-lg" placeholder="Enter your text content..."></textarea>
                 </div>
 
-                <!-- Photo Input -->
-                <div id="pdfPhotoInput" class="mb-8 hidden">
-                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">🖼️ Upload Photo</label>
-                    <input type="file" id="pdfPhotoFile" accept="image/*" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl bg-white/5 hover:border-white/50 transition-all file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white">
-                    <div id="pdfPhotoPreview" class="mt-4 hidden p-4 bg-white/5 rounded-xl">
-                        <img id="pdfPhotoShow" class="max-w-md max-h-96 object-contain rounded-lg mx-auto">
-                    </div>
+                <div id="pdfPhotoInput" class="pdf-input-group mb-8 hidden">
+                    <input type="file" id="pdfPhotoFile" accept="image/jpeg,image/png" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl bg-white/5">
+                    <div id="pdfPhotoPreview" class="mt-4 hidden"><img id="pdfPhotoShow" class="max-w-xs mx-auto rounded-lg"></div>
                 </div>
 
-                <!-- Link Input -->
-                <div id="pdfLinkInput" class="mb-8 hidden">
-                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">🔗 Website Link</label>
-                    <input type="url" id="pdfLinkUrl" placeholder="https://example.com" class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none">
+                <div id="pdfLinkInput" class="pdf-input-group mb-8 hidden">
+                    <input type="url" id="pdfLinkUrl" placeholder="https://example.com" class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:outline-none">
                 </div>
 
-                <!-- Password -->
-                <div class="mb-8 flex items-center gap-4 p-6 bg-white/5 rounded-2xl">
-                    <input type="checkbox" id="pdfPasswordCheck" class="w-6 h-6 text-purple-600 bg-white/10 border-white/30 rounded focus:ring-purple-500">
-                    <label for="pdfPasswordCheck" class="text-lg font-semibold flex items-center gap-2">🔒 Password Protect</label>
-                    <input type="password" id="pdfPassword" placeholder="Enter PDF password" class="flex-1 p-4 rounded-xl border border-white/20 bg-white/5 focus:ring-2 focus:ring-purple-500 hidden">
-                </div>
-
-                <button onclick="generatePDF()" id="pdfGenerateBtn" class="w-full py-8 px-12 text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl hover:from-purple-700 hover:to-pink-700 hover:scale-105 transition-all shadow-2xl mb-8">
+                <button onclick="generatePDF()" id="pdfGenerateBtn" class="w-full py-8 text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl hover:scale-105 transition-all shadow-2xl">
                     🚀 Generate & Download PDF
                 </button>
-
-                <div id="pdfPreview" class="hidden">
-                    <iframe id="pdfFrame" class="w-full h-96 rounded-2xl border-4 border-white/20 shadow-2xl"></iframe>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- QR Generator - TEXT/PHOTO/LINK -->
     <section id="qr" class="min-h-screen pt-20 px-4 py-12 hidden">
         <div class="container mx-auto max-w-4xl">
             <div class="glass p-8 rounded-3xl shadow-2xl">
                 <h2 class="text-4xl font-black mb-8 gradient-text text-center">QR Code Generator</h2>
                 
-                <!-- Input Type Tabs -->
                 <div class="flex bg-white/5 rounded-xl p-1 mb-8">
-                    <button onclick="setQRType('text')" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active:text-emerald-400 tab-active:bg-emerald-600/50">📝 Text</button>
-                    <button onclick="setQRType('photo')" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
-                    <button onclick="setQRType('link')" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
+                    <button onclick="setQRType('text', event)" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active">📝 Text</button>
+                    <button onclick="setQRType('photo', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
+                    <button onclick="setQRType('link', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
                 </div>
 
-                <!-- Text Input -->
-                <div id="qrTextInput">
-                    <input type="text" id="qrTextContent" placeholder="Enter text, email..." class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-emerald-500/30 focus:outline-none mb-8">
-                </div>
+                <div id="qrTextInput" class="qr-input-group"><input type="text" id="qrTextContent" placeholder="Enter text..." class="w-full p-6 rounded-2xl bg-white/5 border border-white/20 mb-8"></div>
+                <div id="qrPhotoInput" class="qr-input-group hidden"><input type="file" id="qrPhotoFile" accept="image/*" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl mb-8"></div>
+                <div id="qrLinkInput" class="qr-input-group hidden"><input type="url" id="qrLinkUrl" placeholder="https://..." class="w-full p-6 rounded-2xl bg-white/5 border border-white/20 mb-8"></div>
 
-                <!-- Photo Input -->
-                <div id="qrPhotoInput" class="hidden mb-8">
-                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">🖼️ Upload Photo for QR</label>
-                    <input type="file" id="qrPhotoFile" accept="image/*" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl bg-white/5 hover:border-white/50 transition-all file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:bg-emerald-600 file:text-white">
-                    <div id="qrPhotoPreview" class="mt-4 hidden p-4 bg-white/5 rounded-xl">
-                        <img id="qrPhotoShow" class="max-w-xs max-h-48 object-contain rounded-lg mx-auto">
-                    </div>
-                </div>
-
-                <!-- Link Input -->
-                <div id="qrLinkInput" class="hidden mb-8">
-                    <label class="block text-lg font-semibold mb-4 flex items-center gap-2">🔗 Website URL</label>
-                    <input type="url" id="qrLinkUrl" placeholder="https://example.com" class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-emerald-500/30 focus:outline-none">
-                </div>
-
-                <!-- QR Customization -->
                 <div class="grid md:grid-cols-3 gap-6 mb-8">
                     <div>
-                        <label class="block text-lg font-semibold mb-3 flex items-center gap-2">🎨 Colors</label>
-                        <div class="flex gap-3">
-                            <input type="color" id="qrColorDark" value="#000000" class="w-14 h-14 rounded-xl border-2 border-white/30 shadow-lg cursor-pointer" title="Foreground">
-                            <input type="color" id="qrColorLight" value="#ffffff" class="w-14 h-14 rounded-xl border-2 border-white/30 shadow-lg cursor-pointer" title="Background">
-                        </div>
+                        <label>Colors</label>
+                        <div class="flex gap-2"><input type="color" id="qrColorDark" value="#000000"><input type="color" id="qrColorLight" value="#ffffff"></div>
                     </div>
                     <div>
-                        <label class="block text-lg font-semibold mb-3">📏 Size</label>
-                        <input type="range" id="qrSize" min="200" max="500" value="300" class="w-full h-3 bg-white/20 rounded-lg accent-emerald-500 cursor-pointer">
-                        <span id="qrSizeVal" class="text-sm block">300px</span>
+                        <label>Size (px)</label>
+                        <input type="range" id="qrSize" min="200" max="500" value="300" class="w-full">
                     </div>
                     <div>
-                        <label class="block text-lg font-semibold mb-3 flex items-center gap-2">🏷️ Logo</label>
-                        <input type="file" id="qrLogo" accept="image/*" class="w-full p-4 border-2 border-dashed border-white/30 rounded-xl bg-white/5">
+                        <label>Logo (Center)</label>
+                        <input type="file" id="qrLogo" accept="image/*" class="w-full text-xs">
                     </div>
                 </div>
 
-                <button onclick="generateQR()" id="qrGenerateBtn" class="w-full py-8 px-12 text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 rounded-3xl hover:from-emerald-700 hover:to-green-700 hover:scale-105 transition-all shadow-2xl mb-8">
-                    ✨ Generate QR Code
-                </button>
+                <button onclick="generateQR()" id="qrGenerateBtn" class="w-full py-8 text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 rounded-3xl hover:scale-105 transition-all">✨ Generate QR Code</button>
 
-                <div id="qrResult" class="hidden text-center">
-                    <canvas id="qrCanvas" class="mx-auto border-4 border-white/20 rounded-3xl shadow-2xl mb-6 block max-w-full" width="300" height="300"></canvas>
-                    <button onclick="downloadQR()" class="px-12 py-6 bg-gradient-to-r from-emerald-600 to-green-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">
-                        💾 Download QR Code
-                    </button>
-                    <button onclick="downloadQRasPDF()" class="px-12 py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl ml-4">
-                        📄 QR to PDF
-                    </button>
+                <div id="qrResult" class="hidden text-center mt-8">
+                    <canvas id="qrCanvas" class="mx-auto border-4 border-white/20 rounded-3xl mb-6"></canvas>
+                    <button onclick="downloadQR()" class="px-8 py-4 bg-emerald-600 rounded-xl font-bold">💾 Download PNG</button>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Login Panel - 0000 (User Stats) | xiao2005 (Full Admin) -->
-    <section id="login" class="min-h-screen pt-20 px-4 py-12 hidden">
-        <div class="container mx-auto max-w-2xl">
-            <div class="glass p-12 rounded-3xl shadow-2xl text-center">
-                <h2 class="text-4xl font-black mb-8 gradient-text">🔐 Login Panel</h2>
-                <p class="text-lg mb-8 text-slate-300">
-                    👤 User (Stats): <code class="bg-yellow-500/20 px-3 py-1 rounded-full text-yellow-400 font-bold">0000</code><br>
-                    ⚙️ Admin (Full Control): <code class="bg-purple-500/20 px-3 py-1 rounded-full text-purple-400 font-bold">[Hidden]</code>
-                </p>
-                <div class="space-y-4 mb-8">
-                    <input type="password" id="loginPassword" placeholder="Enter password..." class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none text-center">
-                    <button onclick="userLogin()" class="w-full py-6 px-8 bg-gradient-to-r from-yellow-500 to-orange-500 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">
-                        👤 User Login
-                    </button>
-                    <button onclick="adminLogin()" class="w-full py-6 px-8 bg-gradient-to-r from-purple-600 to-pink-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">
-                        ⚙️ Admin Login
-                    </button>
-                </div>
-            </div>
-
-            <!-- User Stats Panel -->
-            <div id="userStatsPanel" class="glass p-8 rounded-3xl mt-8 hidden">
-                <h3 class="text-3xl font-bold mb-6 gradient-text text-center">📊 User Statistics</h3>
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="glass p-6 rounded-2xl text-center">
-                        <div class="text-3xl font-black text-purple-400 mb-2" id="userTotalPDFs">0</div>
-                        <div>Total PDFs</div>
-                    </div>
-                    <div class="glass p-6 rounded-2xl text-center">
-                        <div class="text-3xl font-black text-emerald-400 mb-2" id="userTotalQRs">0</div>
-                        <div>Total QRs</div>
-                    </div>
-                    <div class="glass p-6 rounded-2xl text-center">
-                        <div class="text-3xl font-black text-yellow-400 mb-2" id="userTodayPDFs">0</div>
-                        <div>Today PDFs</div>
-                    </div>
-                    <div class="glass p-6 rounded-2xl text-center">
-                        <div class="text-3xl font-black text-green-400 mb-2" id="userTodayQRs">0</div>
-                        <div>Today QRs</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Full Panel -->
-            <div id="adminFullPanel" class="hidden">
-                <div class="glass p-8 rounded-3xl mb-8">
-                    <h3 class="text-3xl font-bold mb-6 gradient-text text-center">⚙️ Admin Dashboard - Full Control</h3>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                        <div class="glass p-8 rounded-2xl text-center">
-                            <div class="text-4xl font-black gradient-text mb-4" id="adminTotalPDFs">0</div>
-                            <div>Total PDFs</div>
-                        </div>
-                        <div class="glass p-8 rounded-2xl text-center">
-                            <div class="text-4xl font-black gradient-text mb-4" id="adminTotalQRs">0</div>
-                            <div>Total QRs</div>
-                        </div>
-                        <div class="glass p-8 rounded-2xl text-center">
-                            <div class="text-4xl font-black text-yellow-400 mb-4" id="adminTodayPDFs">0</div>
-                            <div>Today's PDFs</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Admin Management -->
-                <div class="grid md:grid-cols-2 gap-8 mb-8">
-                    <div class="glass p-8 rounded-2xl">
-                        <h4 class="text-2xl font-bold mb-6">📢 Manage Ads</h4>
-                        <textarea id="adminAds" rows="4" placeholder="Enter ad HTML code..." class="w-full p-4 rounded-xl border border-white/20 bg-white/5"></textarea>
-                        <button onclick="saveAds()" class="mt-4 w-full py-3 bg-green-600 rounded-xl font-bold">💾 Save Ads</button>
-                    </div>
-                    <div class="glass p-8 rounded-2xl">
-                        <h4 class="text-2xl font-bold mb-6">📧 Contact Info</h4>
-                        <div class="space-y-3">
-                            <input id="adminEmail" placeholder="your@email.com" class="w-full p-3 rounded-xl border border-white/20 bg-white/5">
-                            <input id="adminPhone" placeholder="+95 123 456789" class="w-full p-3 rounded-xl border border-white/20 bg-white/5">
-                            <input id="adminSocial" placeholder="Facebook/Twitter links" class="w-full p-3 rounded-xl border border-white/20 bg-white/5">
-                            <button onclick="saveContact()" class="mt-4 w-full py-3 bg-green-600 rounded-xl font-bold">💾 Save Contact</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Charts -->
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="glass p-8 rounded-2xl">
-                        <h4 class="text-2xl font-bold mb-6">📊 PDF Analytics</h4>
-                        <canvas id="pdfChart" width="400" height="200"></canvas>
-                    </div>
-                    <div class="glass p-8 rounded-2xl">
-                        <h4 class="text-2xl font-bold mb-6">📈 QR Analytics</h4>
-                        <canvas id="qrChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
+    <section id="login" class="min-h-screen pt-20 px-4 hidden">
+        <div class="container mx-auto max-w-2xl glass p-12 rounded-3xl text-center">
+            <h2 class="text-3xl font-bold mb-8 gradient-text">🔐 Admin Access</h2>
+            <input type="password" id="loginPassword" placeholder="Enter password..." class="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-4 text-center">
+            <div class="flex gap-4">
+                <button onclick="handleLogin('user')" class="flex-1 py-4 bg-yellow-600 rounded-xl font-bold">User Stats</button>
+                <button onclick="handleLogin('admin')" class="flex-1 py-4 bg-purple-600 rounded-xl font-bold">Admin Panel</button>
             </div>
         </div>
+
+        <div id="dashboardArea" class="container mx-auto max-w-4xl mt-8 hidden">
+             <div class="glass p-8 rounded-3xl">
+                <h3 id="dashTitle" class="text-2xl font-bold mb-6 text-center">Dashboard</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="p-4 bg-white/5 rounded-xl text-center"><div id="statPDF" class="text-2xl font-bold">0</div>PDFs</div>
+                    <div class="p-4 bg-white/5 rounded-xl text-center"><div id="statQR" class="text-2xl font-bold">0</div>QRs</div>
+                </div>
+                <div id="adminControls" class="hidden">
+                    <h4 class="font-bold mb-4 border-b border-white/10 pb-2">Admin Tools</h4>
+                    <textarea id="adminAds" placeholder="Ad Script Here..." class="w-full p-4 bg-white/5 rounded-xl mb-4"></textarea>
+                    <button onclick="saveAdminData()" class="w-full py-3 bg-green-600 rounded-xl">Save Settings</button>
+                </div>
+             </div>
+        </div>
     </section>
-
-    <!-- Contact Section (Admin Only) -->
-    <div id="contactSection" class="glass fixed bottom-4 right-4 p-4 rounded-2xl shadow-2xl hidden w-72">
-        <h4 class="font-bold mb-3 text-lg">📞 Contact Us</h4>
-        <div id="contactInfo" class="text-sm space-y-2"></div>
-    </div>
-
-    <!-- Ads Section (Admin Only) -->
-    <div id="adsSection" class="glass p-6 rounded-2xl mt-8 mx-auto max-w-4xl hidden"></div>
 
     <script>
         // Global State
         let currentPDFType = 'text';
         let currentQRType = 'text';
-        let stats = {
-            pdf: { total: 0, today: 0, types: { text: 0, photo: 0, link: 0 } },
-            qr: { total: 0, today: 0, types: { text: 0, photo: 0, link: 0 } }
-        };
-        let isUserLoggedIn = false;
-        let isAdminLoggedIn = false;
-        let adminAds = '';
-        let adminContact = { email: '', phone: '', social: '' };
+        let stats = { pdf: 0, qr: 0 };
 
-        // Show Sections
-        function showSection(section) {
+        function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(section).classList.remove('hidden');
+            document.getElementById(id).classList.remove('hidden');
         }
 
-        // PDF Type Switcher
-        function setPDFType(type) {
+        // PDF Logic
+        function setPDFType(type, e) {
             currentPDFType = type;
-            document.querySelectorAll('[id^="pdf"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.pdf-input-group').forEach(el => el.classList.add('hidden'));
             document.getElementById(`pdf${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
-            document.querySelectorAll('.tab-active').forEach(el => el.classList.remove('tab-active'));
-            event.target.classList.add('tab-active');
+            
+            // Tab highlight
+            e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
+            e.target.classList.add('tab-active');
         }
 
-        // QR Type Switcher
-        function setQRType(type) {
-            currentQRType = type;
-            document.querySelectorAll('[id^="qr"]').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('[id^="pdf"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`pdf${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
-            document.querySelectorAll('.tab-active').forEach(el => el.classList.remove('tab-active'));
-            event.target.classList.add('tab-active');
-        }
-
-        // QR Type Switcher
-        function setQRType(type) {
-            currentQRType = type;
-            document.querySelectorAll('[id^="qr"]').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`qr${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
-            document.querySelectorAll('.tab-active').forEach(el => el.classList.remove('tab-active'));
-            event.target.classList.add('tab-active');
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            // PDF Photo Preview
-            document.getElementById('pdfPhotoFile').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('pdfPhotoShow').src = e.target.result;
-                        document.getElementById('pdfPhotoPreview').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // QR Photo Preview
-            document.getElementById('qrPhotoFile').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('qrPhotoShow').src = e.target.result;
-                        document.getElementById('qrPhotoPreview').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            // PDF Password Toggle
-            document.getElementById('pdfPasswordCheck').addEventListener('change', function() {
-                document.getElementById('pdfPassword').classList.toggle('hidden', !this.checked);
-            });
-
-            // QR Size Update
-            document.getElementById('qrSize').addEventListener('input', function() {
-                document.getElementById('qrSizeVal').textContent = this.value + 'px';
-                document.getElementById('qrCanvas').width = this.value;
-                document.getElementById('qrCanvas').height = this.value;
-            });
-        });
-
-        // Generate PDF (Text/Photo/Link)
         async function generatePDF() {
             const btn = document.getElementById('pdfGenerateBtn');
-            const isLocked = document.getElementById('pdfPasswordCheck').checked;
-            const password = document.getElementById('pdfPassword').value;
-
-            btn.innerHTML = '⏳ Generating PDF...';
-            btn.disabled = true;
-
+            btn.innerText = "⏳ Processing...";
+            
             try {
                 const { PDFDocument, rgb, StandardFonts } = PDFLib;
                 const pdfDoc = await PDFDocument.create();
-                const page = pdfDoc.addPage([595, 842]); // A4
+                const page = pdfDoc.addPage([595, 842]);
+                const { width, height } = page.getSize();
                 const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-                let hasContent = false;
-
-                // TEXT
                 if (currentPDFType === 'text') {
                     const text = document.getElementById('pdfTextContent').value;
-                    if (text) {
-                        hasContent = true;
-                        const lines = text.match(/.{1,85}/g) || [];
-                        lines.forEach((line, i) => {
-                            page.drawText(line, { x: 50, y: 750 - i * 25, size: 14, font, color: rgb(0,0,0) });
-                        });
-                    }
-                }
-
-                // PHOTO
-                if (currentPDFType === 'photo') {
+                    if(!text) throw new Error("Please enter text");
+                    page.drawText(text, { x: 50, y: height - 100, size: 12, font });
+                } else if (currentPDFType === 'photo') {
                     const file = document.getElementById('pdfPhotoFile').files[0];
-                    if (file) {
-                        hasContent = true;
-                        const bytes = await file.arrayBuffer();
-                        let img;
-                        if (file.type.includes('jpeg')) img = await pdfDoc.embedJpg(bytes);
-                        else img = await pdfDoc.embedPng(bytes);
-                        const { width, height } = img.scale(0.8);
-                        page.drawImage(img, { x: 50, y: 100, width, height });
-                    }
+                    if(!file) throw new Error("Please select a photo");
+                    const bytes = await file.arrayBuffer();
+                    const img = file.type === 'image/jpeg' ? await pdfDoc.embedJpg(bytes) : await pdfDoc.embedPng(bytes);
+                    const dims = img.scale(0.5);
+                    page.drawImage(img, { x: 50, y: height - dims.height - 50, width: dims.width, height: dims.height });
                 }
-
-                // LINK
-                if (currentPDFType === 'link') {
-                    const url = document.getElementById('pdfLinkUrl').value;
-                    if (url) {
-                        hasContent = true;
-                        page.drawText('Link:', { x: 50, y: 750, size: 18, font, color: rgb(0.2,0.2,0.8) });
-                        page.drawText(url, { x: 50, y: 720, size: 14, font, color: rgb(0,0.5,1) });
-                    }
-                }
-
-                if (!hasContent) {
-                    alert('Please add content!');
-                    return;
-                }
-
-                // Page number
-                page.drawText('Page 1 of 1', { x: 500, y: 30, size: 12, font, color: rgb(0.5) });
 
                 const pdfBytes = await pdfDoc.save();
                 const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = "generated.pdf";
+                link.click();
                 
-                // Download
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `pdf-${currentPDFType}-${Date.now()}.pdf`;
-                a.click();
-
-                // Preview
-                document.getElementById('pdfFrame').src = url;
-                document.getElementById('pdfPreview').classList.remove('hidden');
-
-                // Update Stats
-                stats.pdf.total++;
-                stats.pdf.types[currentPDFType]++;
-                if (isToday()) stats.pdf.today++;
-                updateAllStats();
-
-            } catch (e) {
-                alert('❌ PDF Error: ' + e.message);
-                console.error(e);
-            } finally {
-                btn.innerHTML = '🚀 Generate & Download PDF';
-                btn.disabled = false;
+                stats.pdf++;
+                alert("✅ PDF Generated!");
+            } catch (err) {
+                alert("❌ Error: " + err.message);
             }
+            btn.innerText = "🚀 Generate & Download PDF";
         }
 
-        // Generate QR (Text/Photo/Link)
+        // QR Logic
+        function setQRType(type, e) {
+            currentQRType = type;
+            document.querySelectorAll('.qr-input-group').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`qr${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
+            
+            e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
+            e.target.classList.add('tab-active');
+        }
+
         async function generateQR() {
-            const btn = document.getElementById('qrGenerateBtn');
-            let qrData = '';
+            const canvas = document.getElementById('qrCanvas');
+            let data = "";
+            
+            if(currentQRType === 'text') data = document.getElementById('qrTextContent').value;
+            else if(currentQRType === 'link') data = document.getElementById('qrLinkUrl').value;
+            else data = "Photo_QR_Placeholder";
 
-            // Get QR Data
-            if (currentQRType === 'text') {
-                qrData = document.getElementById('qrTextContent').value;
-            } else if (currentQRType === 'link') {
-                qrData = document.getElementById('qrLinkUrl').value;
-            } else if (currentQRType === 'photo') {
-                qrData = document.getElementById('qrPhotoFile').files[0] ? 'PHOTO_QR_' + Date.now() : '';
-            }
+            if(!data) return alert("Enter data first!");
 
-            if (!qrData) {
-                alert('Please add content!');
-                return;
-            }
-
-            btn.innerHTML = '⏳ Generating QR...';
-            btn.disabled = true;
-
-            try {
-                const canvas = document.getElementById('qrCanvas');
-                const ctx = canvas.getContext('2d');
-                const size = parseInt(document.getElementById('qrSize').value);
-                canvas.width = size;
-                canvas.height = size;
-
-                // Clear canvas
-                ctx.fillStyle = document.getElementById('qrColorLight').value;
-                ctx.fillRect(0, 0, size, size);
-
-                // Generate QR
-                await QRCode.toCanvas(canvas, qrData, {
-                    width: size,
-                    margin: 2,
-                    color: {
-                        dark: document.getElementById('qrColorDark').value,
-                        light: document.getElementById('qrColorLight').value
-                    }
-                });
-
-                // Logo
-                const logoFile = document.getElementById('qrLogo').files[0];
-                if (logoFile) {
-                    const img = new Image();
-                    img.onload = () => {
-                        const logoSize = size * 0.2;
-                        const x = (size - logoSize) / 2;
-                        const y = (size - logoSize) / 2;
-                        
-                        ctx.filter = 'blur(3px)';
-                        ctx.fillStyle = document.getElementById('qrColorLight').value;
-                        ctx.fillRect(x-10, y-10, logoSize+20, logoSize+20);
-                        ctx.filter = 'none';
-                        ctx.drawImage(img, x, y, logoSize, logoSize);
-                    };
-                    img.src = URL.createObjectURL(logoFile);
+            const size = document.getElementById('qrSize').value;
+            await QRCode.toCanvas(canvas, data, {
+                width: size,
+                color: {
+                    dark: document.getElementById('qrColorDark').value,
+                    light: document.getElementById('qrColorLight').value
                 }
-
-                document.getElementById('qrResult').classList.remove('hidden');
-                
-                // Update Stats
-                stats.qr.total++;
-                stats.qr.types[currentQRType]++;
-                if (isToday()) stats.qr.today++;
-                updateAllStats();
-
-            } catch (e) {
-                alert('❌ QR Error: ' + e.message);
-            } finally {
-                btn.innerHTML = '✨ Generate QR Code';
-                btn.disabled = false;
-            }
+            });
+            
+            document.getElementById('qrResult').classList.remove('hidden');
+            stats.qr++;
         }
 
-        // Download QR
         function downloadQR() {
-            const canvas = document.getElementById('qrCanvas');
             const link = document.createElement('a');
-            link.download = `qr-${currentQRType}-${Date.now()}.png`;
-            link.href = canvas.toDataURL();
+            link.download = 'qrcode.png';
+            link.href = document.getElementById('qrCanvas').toDataURL();
             link.click();
         }
 
-        // QR to PDF
-        async function downloadQRasPDF() {
-            const canvas = document.getElementById('qrCanvas');
-            const { PDFDocument, rgb } = PDFLib;
-            const pdfDoc = await PDFDocument.create();
-            const page = pdfDoc.addPage([595, 842]);
-            
-            const qrImage = await pdfDoc.embedPng(canvas.toDataURL().split(',')[1]);
-            const { width, height } = qrImage.scale(0.7);
-            page.drawImage(qrImage, { x: 100, y: 300, width, height });
-            
-            page.drawText('QR Code Generated', { x: 50, y: 780, size: 24, color: rgb(0,0,0) });
-            page.drawText(`Type: ${currentQRType.toUpperCase()}`, { x: 50, y: 750, size: 16, color: rgb(0.5) });
-            
-            const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `qr-pdf-${Date.now()}.pdf`;
-            a.click();
-        }
-
-        // User Login (0000 - Stats Only)
-        function userLogin() {
-            const password = document.getElementById('loginPassword').value;
-            if (password === '0000') {
-                isUserLoggedIn = true;
-                document.querySelector('#login .glass').classList.add('hidden');
-                document.getElementById('userStatsPanel').classList.remove('hidden');
-                updateUserStats();
+        // Auth Logic
+        function handleLogin(role) {
+            const pw = document.getElementById('loginPassword').value;
+            if (role === 'user' && pw === '0000') {
+                showDashboard("User Statistics", false);
+            } else if (role === 'admin' && pw === 'xiao2005') {
+                showDashboard("Admin Full Control", true);
             } else {
-                alert('❌ Wrong password!');
+                alert("Wrong Password!");
             }
         }
 
-        // Admin Login (xiao2005 - Full Control)
-        function adminLogin() {
-            const password = document.getElementById('loginPassword').value;
-            if (password === 'xiao2005') {
-                isAdminLoggedIn = true;
-                document.querySelector('#login .glass').classList.add('hidden');
-                document.getElementById('adminFullPanel').classList.remove('hidden');
-                document.getElementById('contactSection').classList.remove('hidden');
-                updateAdminStats();
-                drawCharts();
-                loadAdminData();
-            } else {
-                alert('❌ Wrong admin password!');
-            }
-        }
-
-        // Update Stats Functions
-        function updateUserStats() {
-            if (!isUserLoggedIn) return;
-            document.getElementById('userTotalPDFs').textContent = stats.pdf.total;
-            document.getElementById('userTotalQRs').textContent = stats.qr.total;
-            document.getElementById('userTodayPDFs').textContent = stats.pdf.today;
-            document.getElementById('userTodayQRs').textContent = stats.qr.today;
-        }
-
-        function updateAdminStats() {
-            if (!isAdminLoggedIn) return;
-            document.getElementById('adminTotalPDFs').textContent = stats.pdf.total;
-            document.getElementById('adminTotalQRs').textContent = stats.qr.total;
-            document.getElementById('adminTodayPDFs').textContent = stats.pdf.today;
-        }
-
-        function updateAllStats() {
-            updateUserStats();
-            updateAdminStats();
-        }
-
-        // Admin Management
-        function saveAds() {
-            adminAds = document.getElementById('adminAds').value;
-            localStorage.setItem('adminAds', adminAds);
-            document.getElementById('adsSection').innerHTML = adminAds;
-            document.getElementById('adsSection').classList.remove('hidden');
-            alert('✅ Ads saved!');
-        }
-
-        function saveContact() {
-            adminContact = {
-                email: document.getElementById('adminEmail').value,
-                phone: document.getElementById('adminPhone').value,
-                social: document.getElementById('adminSocial').value
-            };
-            localStorage.setItem('adminContact', JSON.stringify(adminContact));
-            updateContactDisplay();
-            alert('✅ Contact saved!');
-        }
-
-        function loadAdminData() {
-            adminAds = localStorage.getItem('adminAds') || '';
-            adminContact = JSON.parse(localStorage.getItem('adminContact') || '{}');
-            document.getElementById('adminAds').value = adminAds;
-            document.getElementById('adminEmail').value = adminContact.email || '';
-            document.getElementById('adminPhone').value = adminContact.phone || '';
-            document.getElementById('adminSocial').value = adminContact.social || '';
-            
-            updateContactDisplay();
-            if (adminAds) {
-                document.getElementById('adsSection').innerHTML = adminAds;
-                document.getElementById('adsSection').classList.remove('hidden');
-            }
-        }
-
-        function updateContactDisplay() {
-            const contactHtml = `
-                📧 ${adminContact.email || 'No email'}<br>
-                📞 ${adminContact.phone || 'No phone'}<br>
-                🌐 ${adminContact.social || 'No social'}
-            `;
-            document.getElementById('contactInfo').innerHTML = contactHtml;
-        }
-
-        // Charts
-        function drawCharts() {
-            // Simple demo charts
-            const pdfCtx = document.getElementById('pdfChart').getContext('2d');
-            new Chart(pdfCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Text', 'Photo', 'Link'],
-                    datasets: [{ 
-                        label: 'PDF Types', 
-                        data: [stats.pdf.types.text, stats.pdf.types.photo, stats.pdf.types.link], 
-                        backgroundColor: '#8b5cf6' 
-                    }]
-                },
-                options: { scales: { y: { beginAtZero: true } } }
-            });
-
-            const qrCtx = document.getElementById('qrChart').getContext('2d');
-            new Chart(qrCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Text', 'Photo', 'Link'],
-                    datasets: [{ 
-                        data: [stats.qr.types.text, stats.qr.types.photo, stats.qr.types.link], 
-                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444']
-                    }]
-                }
-            });
-        }
-
-        // Utils
-        function isToday() {
-            return new Date().getHours() < 24; // Simplified
+        function showDashboard(title, isAdmin) {
+            document.querySelector('#login .glass').classList.add('hidden');
+            document.getElementById('dashboardArea').classList.remove('hidden');
+            document.getElementById('dashTitle').innerText = title;
+            document.getElementById('statPDF').innerText = stats.pdf;
+            document.getElementById('statQR').innerText = stats.qr;
+            if(isAdmin) document.getElementById('adminControls').classList.remove('hidden');
         }
     </script>
 </body>
