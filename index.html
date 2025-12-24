@@ -12,170 +12,155 @@
         .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
         .gradient-text { background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .tab-active { background-color: rgba(139, 92, 246, 0.5) !important; color: #a78bfa !important; border: 1px solid #8b5cf6; }
-        .preview-box { border: 2px dashed rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; background: rgba(0,0,0,0.3); }
+        .preview-area { min-height: 300px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 20px; background: rgba(0,0,0,0.2); }
+        iframe { width: 100%; height: 450px; border-radius: 15px; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 min-h-screen text-white font-sans pb-20">
+<body class="bg-[#0f0f23] text-white font-sans pb-20">
     
     <nav class="glass fixed top-0 w-full z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-black gradient-text">PDF-QR Pro</h1>
-            <div class="flex gap-4">
-                <button onclick="showSection('home')" class="hover:text-purple-400">Home</button>
+            <h1 class="text-xl font-black gradient-text">PDF-QR Pro</h1>
+            <div class="flex gap-4 text-sm">
                 <button onclick="showSection('pdf')" class="hover:text-purple-400">PDF</button>
-                <button onclick="showSection('qr')" class="hover:text-purple-400">QR</button>
+                <button onclick="showSection('qr')" class="hover:text-emerald-400">QR</button>
             </div>
         </div>
     </nav>
 
-    <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4">
-        <div class="text-center">
-            <h1 class="text-5xl md:text-7xl font-black mb-6 gradient-text">Smart Generator</h1>
-            <p class="text-slate-300 text-lg mb-8">Preview အရင်ကြည့်၊ စိတ်ကြိုက်မှ ဒေါင်းလုပ်ဆွဲပါ။</p>
-            <div class="flex gap-4 justify-center">
-                <button onclick="showSection('pdf')" class="px-8 py-4 bg-purple-600 rounded-xl font-bold">PDF စတင်ရန်</button>
-                <button onclick="showSection('qr')" class="px-8 py-4 bg-emerald-600 rounded-xl font-bold">QR စတင်ရန်</button>
+    <section id="pdf" class="pt-24 px-4 max-w-4xl mx-auto">
+        <div class="glass p-6 rounded-3xl">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">📄 PDF Generator</h2>
+            
+            <div class="flex bg-white/5 rounded-xl p-1 mb-6">
+                <button onclick="setPDFMode('text', event)" class="flex-1 py-2 rounded-lg tab-active">Text</button>
+                <button onclick="setPDFMode('photo', event)" class="flex-1 py-2 rounded-lg">Photo</button>
+            </div>
+
+            <div class="mb-6">
+                <textarea id="pdfInputText" rows="4" class="w-full p-4 rounded-xl bg-white/5 border border-white/10" placeholder="မြန်မာစာ သို့မဟုတ် အင်္ဂလိပ်စာ ရိုက်ပါ..."></textarea>
+                <input type="file" id="pdfInputFile" accept="image/*" class="w-full p-4 bg-white/5 rounded-xl hidden">
+            </div>
+
+            <button onclick="handlePDFPreview()" class="w-full py-4 bg-purple-600 rounded-xl font-bold mb-8 hover:bg-purple-700 transition-all">👁️ Preview PDF</button>
+
+            <div id="pdfPreviewBox" class="hidden">
+                <div class="preview-area mb-4 overflow-hidden">
+                    <iframe id="pdfFrame"></iframe>
+                </div>
+                <button onclick="downloadPDF()" class="w-full py-4 bg-pink-600 rounded-xl font-bold">💾 Download PDF File</button>
             </div>
         </div>
     </section>
 
-    <section id="pdf" class="min-h-screen pt-24 px-4 hidden">
-        <div class="container mx-auto max-w-4xl">
-            <div class="glass p-8 rounded-3xl">
-                <h2 class="text-3xl font-bold mb-6 gradient-text">PDF Maker</h2>
-                <div class="flex bg-white/5 rounded-xl p-1 mb-6">
-                    <button onclick="setPDFType('text', event)" class="flex-1 py-3 rounded-lg tab-active">Text</button>
-                    <button onclick="setPDFType('photo', event)" class="flex-1 py-3 rounded-lg">Photo</button>
+    <section id="qr" class="pt-10 px-4 max-w-4xl mx-auto">
+        <div class="glass p-6 rounded-3xl">
+            <h2 class="text-2xl font-bold mb-6 gradient-text">📱 QR Generator</h2>
+            <input type="text" id="qrInputData" class="w-full p-4 rounded-xl bg-white/5 border border-white/10 mb-6" placeholder="စာသား သို့မဟုတ် Link ထည့်ပါ...">
+            
+            <button onclick="handleQRPreview()" class="w-full py-4 bg-emerald-600 rounded-xl font-bold mb-8 hover:bg-emerald-700 transition-all">👁️ Preview QR Code</button>
+
+            <div id="qrPreviewBox" class="hidden text-center">
+                <div class="preview-area p-6 mb-4 flex justify-center items-center">
+                    <canvas id="qrCanvas" class="max-w-full rounded-lg"></canvas>
                 </div>
-
-                <div id="pdfInputArea" class="mb-6">
-                    <textarea id="pdfText" rows="5" class="w-full p-4 rounded-xl bg-white/5 border border-white/20" placeholder="စာသားထည့်ပါ..."></textarea>
-                    <input type="file" id="pdfFile" accept="image/*" class="w-full p-4 bg-white/5 rounded-xl hidden">
-                </div>
-
-                <button onclick="previewPDF()" class="w-full py-4 bg-purple-600 rounded-xl font-bold mb-6">👁️ Preview PDF</button>
-
-                <div id="pdfPreviewContainer" class="hidden">
-                    <div class="preview-box p-4 mb-4">
-                        <iframe id="pdfPreviewFrame" class="w-full h-96 rounded-lg"></iframe>
-                    </div>
-                    <button onclick="downloadPDF()" class="w-full py-4 bg-pink-600 rounded-xl font-bold">💾 Download PDF Now</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="qr" class="min-h-screen pt-24 px-4 hidden">
-        <div class="container mx-auto max-w-4xl">
-            <div class="glass p-8 rounded-3xl">
-                <h2 class="text-3xl font-bold mb-6 gradient-text">QR Generator</h2>
-                <input type="text" id="qrText" class="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-6" placeholder="စာသား သို့မဟုတ် Link ထည့်ပါ...">
-                
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-white/5 p-4 rounded-xl">
-                        <label class="block mb-2 text-sm">QR Color</label>
-                        <input type="color" id="qrColor" value="#000000" class="w-full">
-                    </div>
-                    <div class="bg-white/5 p-4 rounded-xl">
-                        <label class="block mb-2 text-sm">BG Color</label>
-                        <input type="color" id="qrBG" value="#ffffff" class="w-full">
-                    </div>
-                </div>
-
-                <button onclick="previewQR()" class="w-full py-4 bg-emerald-600 rounded-xl font-bold mb-6">👁️ Preview QR Code</button>
-
-                <div id="qrPreviewContainer" class="hidden text-center">
-                    <div class="preview-box p-8 mb-4 flex justify-center">
-                        <canvas id="qrCanvas" class="rounded-lg shadow-2xl"></canvas>
-                    </div>
-                    <button onclick="downloadQR()" class="w-full py-4 bg-blue-600 rounded-xl font-bold">💾 Download PNG Now</button>
-                </div>
+                <button onclick="downloadQR()" class="w-full py-4 bg-blue-600 rounded-xl font-bold">💾 Download QR Image</button>
             </div>
         </div>
     </section>
 
     <script>
-        let currentPDFType = 'text';
-        let lastPDFBlob = null;
+        let currentMode = 'text';
+        let pdfBlobUrl = null;
 
         function showSection(id) {
-            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-            document.getElementById(id).classList.remove('hidden');
-            window.scrollTo(0,0);
+            document.getElementById('pdf').classList.toggle('hidden', id !== 'pdf');
+            document.getElementById('qr').classList.toggle('hidden', id !== 'qr');
         }
 
-        function setPDFType(type, e) {
-            currentPDFType = type;
-            document.getElementById('pdfText').classList.toggle('hidden', type !== 'text');
-            document.getElementById('pdfFile').classList.toggle('hidden', type !== 'photo');
+        // PDF Type Switch
+        function setPDFMode(mode, e) {
+            currentMode = mode;
+            document.getElementById('pdfInputText').classList.toggle('hidden', mode !== 'text');
+            document.getElementById('pdfInputFile').classList.toggle('hidden', mode !== 'photo');
             e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
             e.target.classList.add('tab-active');
         }
 
         // --- PDF Preview Logic ---
-        async function previewPDF() {
+        async function handlePDFPreview() {
             try {
                 const { PDFDocument, rgb } = PDFLib;
                 const pdfDoc = await PDFDocument.create();
                 
-                // Fetch Myanmar Font
+                // မြန်မာစာအတွက် Font Load လုပ်ခြင်း (Error မတက်အောင် သေချာပေါက်လိုအပ်သည်)
                 const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/pyidaungsu@master/fonts/ttf/Pyidaungsu-Regular.ttf';
-                const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
-                const myFont = await pdfDoc.embedFont(fontBytes);
+                const fontBytes = await fetch(fontUrl).then(res => {
+                    if(!res.ok) throw new Error("Font load မရပါ");
+                    return res.arrayBuffer();
+                });
+                const customFont = await pdfDoc.embedFont(fontBytes);
 
                 const page = pdfDoc.addPage([595, 842]);
                 const { height } = page.getSize();
 
-                if (currentPDFType === 'text') {
-                    const text = document.getElementById('pdfText').value || "No Content";
-                    page.drawText(text, { x: 50, y: height - 100, size: 18, font: myFont });
+                if (currentMode === 'text') {
+                    const text = document.getElementById('pdfInputText').value || "No Content";
+                    page.drawText(text, { x: 50, y: height - 100, size: 16, font: customFont });
                 } else {
-                    const file = document.getElementById('pdfFile').files[0];
-                    if (!file) return alert("ဓာတ်ပုံရွေးပါ");
+                    const file = document.getElementById('pdfInputFile').files[0];
+                    if (!file) return alert("ဓာတ်ပုံအရင်ရွေးပါ");
                     const imgBytes = await file.arrayBuffer();
                     const img = file.type.includes('png') ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
-                    page.drawImage(img, { x: 50, y: height - 450, width: 400, height: 400 });
+                    page.drawImage(img, { x: 50, y: height - 400, width: 350, height: 350 });
                 }
 
                 const pdfBytes = await pdfDoc.save();
-                lastPDFBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const url = URL.createObjectURL(lastPDFBlob);
+                if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); // Memory ရှင်းရန်
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                pdfBlobUrl = URL.createObjectURL(blob);
                 
-                document.getElementById('pdfPreviewFrame').src = url;
-                document.getElementById('pdfPreviewContainer').classList.remove('hidden');
-            } catch (err) { alert(err.message); }
+                document.getElementById('pdfFrame').src = pdfBlobUrl;
+                document.getElementById('pdfPreviewBox').classList.remove('hidden');
+            } catch (err) {
+                alert("Error: " + err.message);
+                console.error(err);
+            }
         }
 
         function downloadPDF() {
-            if (!lastPDFBlob) return;
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(lastPDFBlob);
-            link.download = `Document_${Date.now()}.pdf`;
-            link.click();
+            if (!pdfBlobUrl) return;
+            const a = document.createElement('a');
+            a.href = pdfBlobUrl;
+            a.download = `Document_${Date.now()}.pdf`;
+            a.click();
         }
 
         // --- QR Preview Logic ---
-        async function previewQR() {
-            const data = document.getElementById('qrText').value;
-            if (!data) return alert("စာသားထည့်ပါ");
+        function handleQRPreview() {
+            const data = document.getElementById('qrInputData').value;
+            if (!data) return alert("Data တစ်ခုခုရိုက်ပါ");
 
             const canvas = document.getElementById('qrCanvas');
-            await QRCode.toCanvas(canvas, data, {
-                width: 300,
-                color: {
-                    dark: document.getElementById('qrColor').value,
-                    light: document.getElementById('qrBG').value
+            // QRCode library ကို သေချာခေါ်ယူအသုံးပြုခြင်း
+            QRCode.toCanvas(canvas, data, {
+                width: 250,
+                margin: 2,
+                color: { dark: "#000000", light: "#ffffff" }
+            }, function (error) {
+                if (error) {
+                    alert("QR Error: " + error);
+                } else {
+                    document.getElementById('qrPreviewBox').classList.remove('hidden');
                 }
             });
-
-            document.getElementById('qrPreviewContainer').classList.remove('hidden');
         }
 
         function downloadQR() {
             const canvas = document.getElementById('qrCanvas');
             const link = document.createElement('a');
-            link.download = 'qrcode.png';
-            link.href = canvas.toDataURL();
+            link.href = canvas.toDataURL("image/png");
+            link.download = `QR_${Date.now()}.png`;
             link.click();
         }
     </script>
