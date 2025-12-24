@@ -7,263 +7,176 @@
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --bg: #0f0f23; --glass: rgba(255,255,255,0.1); }
-        .dark { color-scheme: dark; }
         .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
         .gradient-text { background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .tab-active { background-color: rgba(139, 92, 246, 0.5) !important; color: #a78bfa !important; border: 1px solid #8b5cf6; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .float { animation: float 3s ease-in-out infinite; }
+        .preview-box { border: 2px dashed rgba(255,255,255,0.2); border-radius: 20px; overflow: hidden; background: rgba(0,0,0,0.3); }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 min-h-screen text-white font-sans">
+<body class="bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 min-h-screen text-white font-sans pb-20">
     
     <nav class="glass fixed top-0 w-full z-50 p-4">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-black gradient-text">PDF-QR Pro</h1>
             <div class="flex gap-4">
-                <button onclick="showSection('home')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">Home</button>
-                <button onclick="showSection('pdf')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">PDF</button>
-                <button onclick="showSection('qr')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">QR</button>
-                <button onclick="showSection('login')" class="px-4 py-2 rounded-lg hover:bg-white/10 transition-all">Login</button>
+                <button onclick="showSection('home')" class="hover:text-purple-400">Home</button>
+                <button onclick="showSection('pdf')" class="hover:text-purple-400">PDF</button>
+                <button onclick="showSection('qr')" class="hover:text-purple-400">QR</button>
             </div>
         </div>
     </nav>
 
     <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4">
-        <div class="text-center max-w-4xl mx-auto">
-            <h1 class="text-6xl md:text-7xl font-black mb-8 gradient-text">PDF & QR Generator</h1>
-            <p class="text-xl md:text-2xl text-slate-300 mb-12 leading-relaxed">
-                ✅ Text/Link/Photo → PDF + Simple Formatting<br>
-                ✅ Text/Link/Photo → QR + Custom Logos/Colors<br>
-                ✅ Professional Analytics + Admin Control
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button onclick="showSection('pdf')" class="px-12 py-6 bg-gradient-to-r from-purple-600 to-pink-600 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">📄 PDF</button>
-                <button onclick="showSection('qr')" class="px-12 py-6 border-2 border-white/30 bg-white/10 text-xl font-bold rounded-2xl hover:scale-105 transition-all shadow-2xl">📱 QR</button>
+        <div class="text-center">
+            <h1 class="text-5xl md:text-7xl font-black mb-6 gradient-text">Smart Generator</h1>
+            <p class="text-slate-300 text-lg mb-8">Preview အရင်ကြည့်၊ စိတ်ကြိုက်မှ ဒေါင်းလုပ်ဆွဲပါ။</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="showSection('pdf')" class="px-8 py-4 bg-purple-600 rounded-xl font-bold">PDF စတင်ရန်</button>
+                <button onclick="showSection('qr')" class="px-8 py-4 bg-emerald-600 rounded-xl font-bold">QR စတင်ရန်</button>
             </div>
         </div>
     </section>
 
-    <section id="pdf" class="min-h-screen pt-20 px-4 py-12 hidden">
+    <section id="pdf" class="min-h-screen pt-24 px-4 hidden">
         <div class="container mx-auto max-w-4xl">
-            <div class="glass p-8 rounded-3xl shadow-2xl">
-                <h2 class="text-4xl font-black mb-8 gradient-text text-center">PDF Generator</h2>
-                
-                <div class="flex bg-white/5 rounded-xl p-1 mb-8">
-                    <button onclick="setPDFType('text', event)" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active">📝 Text</button>
-                    <button onclick="setPDFType('photo', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
-                    <button onclick="setPDFType('link', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
+            <div class="glass p-8 rounded-3xl">
+                <h2 class="text-3xl font-bold mb-6 gradient-text">PDF Maker</h2>
+                <div class="flex bg-white/5 rounded-xl p-1 mb-6">
+                    <button onclick="setPDFType('text', event)" class="flex-1 py-3 rounded-lg tab-active">Text</button>
+                    <button onclick="setPDFType('photo', event)" class="flex-1 py-3 rounded-lg">Photo</button>
                 </div>
 
-                <div id="pdfTextInput" class="pdf-input-group mb-8">
-                    <textarea id="pdfTextContent" rows="6" class="w-full p-6 rounded-2xl border border-white/20 bg-white/5 focus:ring-4 focus:ring-purple-500/30 focus:outline-none text-lg" placeholder="Enter your text content..."></textarea>
+                <div id="pdfInputArea" class="mb-6">
+                    <textarea id="pdfText" rows="5" class="w-full p-4 rounded-xl bg-white/5 border border-white/20" placeholder="စာသားထည့်ပါ..."></textarea>
+                    <input type="file" id="pdfFile" accept="image/*" class="w-full p-4 bg-white/5 rounded-xl hidden">
                 </div>
 
-                <div id="pdfPhotoInput" class="pdf-input-group mb-8 hidden">
-                    <input type="file" id="pdfPhotoFile" accept="image/jpeg,image/png" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl bg-white/5">
-                    <div id="pdfPhotoPreview" class="mt-4 hidden"><img id="pdfPhotoShow" class="max-w-xs mx-auto rounded-lg"></div>
-                </div>
+                <button onclick="previewPDF()" class="w-full py-4 bg-purple-600 rounded-xl font-bold mb-6">👁️ Preview PDF</button>
 
-                <div id="pdfLinkInput" class="pdf-input-group mb-8 hidden">
-                    <input type="url" id="pdfLinkUrl" placeholder="https://example.com" class="w-full p-6 text-xl rounded-2xl border border-white/20 bg-white/5 focus:outline-none">
+                <div id="pdfPreviewContainer" class="hidden">
+                    <div class="preview-box p-4 mb-4">
+                        <iframe id="pdfPreviewFrame" class="w-full h-96 rounded-lg"></iframe>
+                    </div>
+                    <button onclick="downloadPDF()" class="w-full py-4 bg-pink-600 rounded-xl font-bold">💾 Download PDF Now</button>
                 </div>
-
-                <button onclick="generatePDF()" id="pdfGenerateBtn" class="w-full py-8 text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl hover:scale-105 transition-all shadow-2xl">
-                    🚀 Generate & Download PDF
-                </button>
             </div>
         </div>
     </section>
 
-    <section id="qr" class="min-h-screen pt-20 px-4 py-12 hidden">
+    <section id="qr" class="min-h-screen pt-24 px-4 hidden">
         <div class="container mx-auto max-w-4xl">
-            <div class="glass p-8 rounded-3xl shadow-2xl">
-                <h2 class="text-4xl font-black mb-8 gradient-text text-center">QR Code Generator</h2>
+            <div class="glass p-8 rounded-3xl">
+                <h2 class="text-3xl font-bold mb-6 gradient-text">QR Generator</h2>
+                <input type="text" id="qrText" class="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-6" placeholder="စာသား သို့မဟုတ် Link ထည့်ပါ...">
                 
-                <div class="flex bg-white/5 rounded-xl p-1 mb-8">
-                    <button onclick="setQRType('text', event)" class="flex-1 py-3 px-6 rounded-lg font-bold tab-active">📝 Text</button>
-                    <button onclick="setQRType('photo', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🖼️ Photo</button>
-                    <button onclick="setQRType('link', event)" class="flex-1 py-3 px-6 rounded-lg font-bold">🔗 Link</button>
-                </div>
-
-                <div id="qrTextInput" class="qr-input-group"><input type="text" id="qrTextContent" placeholder="Enter text..." class="w-full p-6 rounded-2xl bg-white/5 border border-white/20 mb-8"></div>
-                <div id="qrPhotoInput" class="qr-input-group hidden"><input type="file" id="qrPhotoFile" accept="image/*" class="w-full p-6 border-2 border-dashed border-white/30 rounded-2xl mb-8"></div>
-                <div id="qrLinkInput" class="qr-input-group hidden"><input type="url" id="qrLinkUrl" placeholder="https://..." class="w-full p-6 rounded-2xl bg-white/5 border border-white/20 mb-8"></div>
-
-                <div class="grid md:grid-cols-3 gap-6 mb-8">
-                    <div>
-                        <label>Colors</label>
-                        <div class="flex gap-2"><input type="color" id="qrColorDark" value="#000000"><input type="color" id="qrColorLight" value="#ffffff"></div>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-white/5 p-4 rounded-xl">
+                        <label class="block mb-2 text-sm">QR Color</label>
+                        <input type="color" id="qrColor" value="#000000" class="w-full">
                     </div>
-                    <div>
-                        <label>Size (px)</label>
-                        <input type="range" id="qrSize" min="200" max="500" value="300" class="w-full">
-                    </div>
-                    <div>
-                        <label>Logo (Center)</label>
-                        <input type="file" id="qrLogo" accept="image/*" class="w-full text-xs">
+                    <div class="bg-white/5 p-4 rounded-xl">
+                        <label class="block mb-2 text-sm">BG Color</label>
+                        <input type="color" id="qrBG" value="#ffffff" class="w-full">
                     </div>
                 </div>
 
-                <button onclick="generateQR()" id="qrGenerateBtn" class="w-full py-8 text-2xl font-black bg-gradient-to-r from-emerald-600 to-green-600 rounded-3xl hover:scale-105 transition-all">✨ Generate QR Code</button>
+                <button onclick="previewQR()" class="w-full py-4 bg-emerald-600 rounded-xl font-bold mb-6">👁️ Preview QR Code</button>
 
-                <div id="qrResult" class="hidden text-center mt-8">
-                    <canvas id="qrCanvas" class="mx-auto border-4 border-white/20 rounded-3xl mb-6"></canvas>
-                    <button onclick="downloadQR()" class="px-8 py-4 bg-emerald-600 rounded-xl font-bold">💾 Download PNG</button>
+                <div id="qrPreviewContainer" class="hidden text-center">
+                    <div class="preview-box p-8 mb-4 flex justify-center">
+                        <canvas id="qrCanvas" class="rounded-lg shadow-2xl"></canvas>
+                    </div>
+                    <button onclick="downloadQR()" class="w-full py-4 bg-blue-600 rounded-xl font-bold">💾 Download PNG Now</button>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section id="login" class="min-h-screen pt-20 px-4 hidden">
-        <div class="container mx-auto max-w-2xl glass p-12 rounded-3xl text-center">
-            <h2 class="text-3xl font-bold mb-8 gradient-text">🔐 Admin Access</h2>
-            <input type="password" id="loginPassword" placeholder="Enter password..." class="w-full p-4 rounded-xl bg-white/5 border border-white/20 mb-4 text-center">
-            <div class="flex gap-4">
-                <button onclick="handleLogin('user')" class="flex-1 py-4 bg-yellow-600 rounded-xl font-bold">User Stats</button>
-                <button onclick="handleLogin('admin')" class="flex-1 py-4 bg-purple-600 rounded-xl font-bold">Admin Panel</button>
-            </div>
-        </div>
-
-        <div id="dashboardArea" class="container mx-auto max-w-4xl mt-8 hidden">
-             <div class="glass p-8 rounded-3xl">
-                <h3 id="dashTitle" class="text-2xl font-bold mb-6 text-center">Dashboard</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div class="p-4 bg-white/5 rounded-xl text-center"><div id="statPDF" class="text-2xl font-bold">0</div>PDFs</div>
-                    <div class="p-4 bg-white/5 rounded-xl text-center"><div id="statQR" class="text-2xl font-bold">0</div>QRs</div>
-                </div>
-                <div id="adminControls" class="hidden">
-                    <h4 class="font-bold mb-4 border-b border-white/10 pb-2">Admin Tools</h4>
-                    <textarea id="adminAds" placeholder="Ad Script Here..." class="w-full p-4 bg-white/5 rounded-xl mb-4"></textarea>
-                    <button onclick="saveAdminData()" class="w-full py-3 bg-green-600 rounded-xl">Save Settings</button>
-                </div>
-             </div>
         </div>
     </section>
 
     <script>
-        // Global State
         let currentPDFType = 'text';
-        let currentQRType = 'text';
-        let stats = { pdf: 0, qr: 0 };
+        let lastPDFBlob = null;
 
         function showSection(id) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
+            window.scrollTo(0,0);
         }
 
-        // PDF Logic
         function setPDFType(type, e) {
             currentPDFType = type;
-            document.querySelectorAll('.pdf-input-group').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`pdf${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
-            
-            // Tab highlight
+            document.getElementById('pdfText').classList.toggle('hidden', type !== 'text');
+            document.getElementById('pdfFile').classList.toggle('hidden', type !== 'photo');
             e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
             e.target.classList.add('tab-active');
         }
 
-        async function generatePDF() {
-            const btn = document.getElementById('pdfGenerateBtn');
-            btn.innerText = "⏳ Processing...";
-            
+        // --- PDF Preview Logic ---
+        async function previewPDF() {
             try {
-                const { PDFDocument, rgb, StandardFonts } = PDFLib;
+                const { PDFDocument, rgb } = PDFLib;
                 const pdfDoc = await PDFDocument.create();
+                
+                // Fetch Myanmar Font
+                const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/pyidaungsu@master/fonts/ttf/Pyidaungsu-Regular.ttf';
+                const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
+                const myFont = await pdfDoc.embedFont(fontBytes);
+
                 const page = pdfDoc.addPage([595, 842]);
-                const { width, height } = page.getSize();
-                const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+                const { height } = page.getSize();
 
                 if (currentPDFType === 'text') {
-                    const text = document.getElementById('pdfTextContent').value;
-                    if(!text) throw new Error("Please enter text");
-                    page.drawText(text, { x: 50, y: height - 100, size: 12, font });
-                } else if (currentPDFType === 'photo') {
-                    const file = document.getElementById('pdfPhotoFile').files[0];
-                    if(!file) throw new Error("Please select a photo");
-                    const bytes = await file.arrayBuffer();
-                    const img = file.type === 'image/jpeg' ? await pdfDoc.embedJpg(bytes) : await pdfDoc.embedPng(bytes);
-                    const dims = img.scale(0.5);
-                    page.drawImage(img, { x: 50, y: height - dims.height - 50, width: dims.width, height: dims.height });
+                    const text = document.getElementById('pdfText').value || "No Content";
+                    page.drawText(text, { x: 50, y: height - 100, size: 18, font: myFont });
+                } else {
+                    const file = document.getElementById('pdfFile').files[0];
+                    if (!file) return alert("ဓာတ်ပုံရွေးပါ");
+                    const imgBytes = await file.arrayBuffer();
+                    const img = file.type.includes('png') ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
+                    page.drawImage(img, { x: 50, y: height - 450, width: 400, height: 400 });
                 }
 
                 const pdfBytes = await pdfDoc.save();
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = "generated.pdf";
-                link.click();
+                lastPDFBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const url = URL.createObjectURL(lastPDFBlob);
                 
-                stats.pdf++;
-                alert("✅ PDF Generated!");
-            } catch (err) {
-                alert("❌ Error: " + err.message);
-            }
-            btn.innerText = "🚀 Generate & Download PDF";
+                document.getElementById('pdfPreviewFrame').src = url;
+                document.getElementById('pdfPreviewContainer').classList.remove('hidden');
+            } catch (err) { alert(err.message); }
         }
 
-        // QR Logic
-        function setQRType(type, e) {
-            currentQRType = type;
-            document.querySelectorAll('.qr-input-group').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`qr${type.charAt(0).toUpperCase() + type.slice(1)}Input`).classList.remove('hidden');
-            
-            e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
-            e.target.classList.add('tab-active');
-        }
-
-        async function generateQR() {
-            const canvas = document.getElementById('qrCanvas');
-            let data = "";
-            
-            if(currentQRType === 'text') data = document.getElementById('qrTextContent').value;
-            else if(currentQRType === 'link') data = document.getElementById('qrLinkUrl').value;
-            else data = "Photo_QR_Placeholder";
-
-            if(!data) return alert("Enter data first!");
-
-            const size = document.getElementById('qrSize').value;
-            await QRCode.toCanvas(canvas, data, {
-                width: size,
-                color: {
-                    dark: document.getElementById('qrColorDark').value,
-                    light: document.getElementById('qrColorLight').value
-                }
-            });
-            
-            document.getElementById('qrResult').classList.remove('hidden');
-            stats.qr++;
-        }
-
-        function downloadQR() {
+        function downloadPDF() {
+            if (!lastPDFBlob) return;
             const link = document.createElement('a');
-            link.download = 'qrcode.png';
-            link.href = document.getElementById('qrCanvas').toDataURL();
+            link.href = URL.createObjectURL(lastPDFBlob);
+            link.download = `Document_${Date.now()}.pdf`;
             link.click();
         }
 
-        // Auth Logic
-        function handleLogin(role) {
-            const pw = document.getElementById('loginPassword').value;
-            if (role === 'user' && pw === '0000') {
-                showDashboard("User Statistics", false);
-            } else if (role === 'admin' && pw === 'xiao2005') {
-                showDashboard("Admin Full Control", true);
-            } else {
-                alert("Wrong Password!");
-            }
+        // --- QR Preview Logic ---
+        async function previewQR() {
+            const data = document.getElementById('qrText').value;
+            if (!data) return alert("စာသားထည့်ပါ");
+
+            const canvas = document.getElementById('qrCanvas');
+            await QRCode.toCanvas(canvas, data, {
+                width: 300,
+                color: {
+                    dark: document.getElementById('qrColor').value,
+                    light: document.getElementById('qrBG').value
+                }
+            });
+
+            document.getElementById('qrPreviewContainer').classList.remove('hidden');
         }
 
-        function showDashboard(title, isAdmin) {
-            document.querySelector('#login .glass').classList.add('hidden');
-            document.getElementById('dashboardArea').classList.remove('hidden');
-            document.getElementById('dashTitle').innerText = title;
-            document.getElementById('statPDF').innerText = stats.pdf;
-            document.getElementById('statQR').innerText = stats.qr;
-            if(isAdmin) document.getElementById('adminControls').classList.remove('hidden');
+        function downloadQR() {
+            const canvas = document.getElementById('qrCanvas');
+            const link = document.createElement('a');
+            link.download = 'qrcode.png';
+            link.href = canvas.toDataURL();
+            link.click();
         }
     </script>
 </body>
