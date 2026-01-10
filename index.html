@@ -3,166 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF & QR Generator - Professional Tool</title>
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-    <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>MyBookHub - Online Library</title>
     <style>
-        :root { --bg: #0f0f23; --glass: rgba(255,255,255,0.1); }
-        .glass { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
-        .gradient-text { background: linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .tab-active { background-color: rgba(139, 92, 246, 0.5) !important; color: #a78bfa !important; border: 1px solid #8b5cf6; }
-        .preview-area { min-height: 300px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 20px; background: rgba(0,0,0,0.2); }
-        iframe { width: 100%; height: 450px; border-radius: 15px; }
+        /* --- CSS STYLES --- */
+        :root {
+            --primary: #2c3e50;
+            --secondary: #34495e;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 { margin: 0; font-size: 1.5rem; }
+
+        .search-bar input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            width: 250px;
+        }
+
+        /* Main Library Layout */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        /* Book Card */
+        .book-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .book-cover {
+            height: 250px;
+            background-color: var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+        
+        /* Using placeholders for images */
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .book-info {
+            padding: 1rem;
+        }
+
+        .book-title {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .book-author {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+
+        /* Reader Modal (The Overlay) */
+        .reader-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .reader-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            line-height: 1.8;
+            font-size: 1.2rem;
+        }
+
+        .close-reader {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #333;
+            background: #f4f4f4;
+            padding: 5px 15px;
+            border-radius: 50%;
+        }
+
+        .close-reader:hover {
+            background: var(--accent);
+            color: white;
+        }
+
     </style>
 </head>
-<body class="bg-[#0f0f23] text-white font-sans pb-20">
-    
-    <nav class="glass fixed top-0 w-full z-50 p-4">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-black gradient-text">PDF-QR Pro</h1>
-            <div class="flex gap-4 text-sm">
-                <button onclick="showSection('pdf')" class="hover:text-purple-400">PDF</button>
-                <button onclick="showSection('qr')" class="hover:text-emerald-400">QR</button>
-            </div>
+<body>
+
+    <header>
+        <h1>📚 MyBookHub</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search for books..." onkeyup="filterBooks()">
         </div>
-    </nav>
+    </header>
 
-    <section id="pdf" class="pt-24 px-4 max-w-4xl mx-auto">
-        <div class="glass p-6 rounded-3xl">
-            <h2 class="text-2xl font-bold mb-6 gradient-text">📄 PDF Generator</h2>
-            
-            <div class="flex bg-white/5 rounded-xl p-1 mb-6">
-                <button onclick="setPDFMode('text', event)" class="flex-1 py-2 rounded-lg tab-active">Text</button>
-                <button onclick="setPDFMode('photo', event)" class="flex-1 py-2 rounded-lg">Photo</button>
+    <div class="container">
+        <h2 style="margin-bottom: 20px;">Popular Books</h2>
+        <div class="library-grid" id="libraryGrid">
             </div>
+    </div>
 
-            <div class="mb-6">
-                <textarea id="pdfInputText" rows="4" class="w-full p-4 rounded-xl bg-white/5 border border-white/10" placeholder="မြန်မာစာ သို့မဟုတ် အင်္ဂလိပ်စာ ရိုက်ပါ..."></textarea>
-                <input type="file" id="pdfInputFile" accept="image/*" class="w-full p-4 bg-white/5 rounded-xl hidden">
-            </div>
-
-            <button onclick="handlePDFPreview()" class="w-full py-4 bg-purple-600 rounded-xl font-bold mb-8 hover:bg-purple-700 transition-all">👁️ Preview PDF</button>
-
-            <div id="pdfPreviewBox" class="hidden">
-                <div class="preview-area mb-4 overflow-hidden">
-                    <iframe id="pdfFrame"></iframe>
+    <div class="reader-modal" id="readerModal">
+        <span class="close-reader" onclick="closeBook()">&times;</span>
+        <div class="reader-content">
+            <h1 id="readerTitle">Book Title</h1>
+            <h4 id="readerAuthor" style="color: grey;">Author Name</h4>
+            <hr>
+            <div id="readerText">
                 </div>
-                <button onclick="downloadPDF()" class="w-full py-4 bg-pink-600 rounded-xl font-bold">💾 Download PDF File</button>
-            </div>
         </div>
-    </section>
-
-    <section id="qr" class="pt-10 px-4 max-w-4xl mx-auto">
-        <div class="glass p-6 rounded-3xl">
-            <h2 class="text-2xl font-bold mb-6 gradient-text">📱 QR Generator</h2>
-            <input type="text" id="qrInputData" class="w-full p-4 rounded-xl bg-white/5 border border-white/10 mb-6" placeholder="စာသား သို့မဟုတ် Link ထည့်ပါ...">
-            
-            <button onclick="handleQRPreview()" class="w-full py-4 bg-emerald-600 rounded-xl font-bold mb-8 hover:bg-emerald-700 transition-all">👁️ Preview QR Code</button>
-
-            <div id="qrPreviewBox" class="hidden text-center">
-                <div class="preview-area p-6 mb-4 flex justify-center items-center">
-                    <canvas id="qrCanvas" class="max-w-full rounded-lg"></canvas>
-                </div>
-                <button onclick="downloadQR()" class="w-full py-4 bg-blue-600 rounded-xl font-bold">💾 Download QR Image</button>
-            </div>
-        </div>
-    </section>
+    </div>
 
     <script>
-        let currentMode = 'text';
-        let pdfBlobUrl = null;
+        // --- JAVASCRIPT DATA & LOGIC ---
 
-        function showSection(id) {
-            document.getElementById('pdf').classList.toggle('hidden', id !== 'pdf');
-            document.getElementById('qr').classList.toggle('hidden', id !== 'qr');
-        }
-
-        // PDF Type Switch
-        function setPDFMode(mode, e) {
-            currentMode = mode;
-            document.getElementById('pdfInputText').classList.toggle('hidden', mode !== 'text');
-            document.getElementById('pdfInputFile').classList.toggle('hidden', mode !== 'photo');
-            e.target.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('tab-active'));
-            e.target.classList.add('tab-active');
-        }
-
-        // --- PDF Preview Logic ---
-        async function handlePDFPreview() {
-            try {
-                const { PDFDocument, rgb } = PDFLib;
-                const pdfDoc = await PDFDocument.create();
-                
-                // မြန်မာစာအတွက် Font Load လုပ်ခြင်း (Error မတက်အောင် သေချာပေါက်လိုအပ်သည်)
-                const fontUrl = 'https://cdn.jsdelivr.net/gh/googlefonts/pyidaungsu@master/fonts/ttf/Pyidaungsu-Regular.ttf';
-                const fontBytes = await fetch(fontUrl).then(res => {
-                    if(!res.ok) throw new Error("Font load မရပါ");
-                    return res.arrayBuffer();
-                });
-                const customFont = await pdfDoc.embedFont(fontBytes);
-
-                const page = pdfDoc.addPage([595, 842]);
-                const { height } = page.getSize();
-
-                if (currentMode === 'text') {
-                    const text = document.getElementById('pdfInputText').value || "No Content";
-                    page.drawText(text, { x: 50, y: height - 100, size: 16, font: customFont });
-                } else {
-                    const file = document.getElementById('pdfInputFile').files[0];
-                    if (!file) return alert("ဓာတ်ပုံအရင်ရွေးပါ");
-                    const imgBytes = await file.arrayBuffer();
-                    const img = file.type.includes('png') ? await pdfDoc.embedPng(imgBytes) : await pdfDoc.embedJpg(imgBytes);
-                    page.drawImage(img, { x: 50, y: height - 400, width: 350, height: 350 });
-                }
-
-                const pdfBytes = await pdfDoc.save();
-                if (pdfBlobUrl) URL.revokeObjectURL(pdfBlobUrl); // Memory ရှင်းရန်
-                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-                pdfBlobUrl = URL.createObjectURL(blob);
-                
-                document.getElementById('pdfFrame').src = pdfBlobUrl;
-                document.getElementById('pdfPreviewBox').classList.remove('hidden');
-            } catch (err) {
-                alert("Error: " + err.message);
-                console.error(err);
+        // 1. mock Data (Simulating a Database)
+        const booksDB = [
+            {
+                id: 1,
+                title: "The Great Adventure",
+                author: "John Doe",
+                color: "#3498db",
+                content: "<p>Chapter 1: The Beginning</p><p>The sun rose over the horizon, painting the sky in shades of orange and pink. It was a new day, and a new adventure was about to begin...</p><p>He packed his bag, took a deep breath, and stepped out the door.</p>"
+            },
+            {
+                id: 2,
+                title: "Mystery of the Night",
+                author: "Jane Smith",
+                color: "#9b59b6",
+                content: "<p>Chapter 1: The Shadow</p><p>The streets were silent. Too silent. Detective Miller adjusted his hat and walked down the alleyway. He knew something was wrong.</p><p>Suddenly, a cat knocked over a trash can, sending echoes through the night.</p>"
+            },
+            {
+                id: 3,
+                title: "Coding for Beginners",
+                author: "Tech Master",
+                color: "#2ecc71",
+                content: "<p>Introduction</p><p>Welcome to the world of coding! In this book, we will explore HTML, CSS, and JavaScript. These are the building blocks of the web.</p><p>Don't worry if it looks complex at first. We will take it step by step.</p>"
+            },
+            {
+                id: 4,
+                title: "Space Travel 101",
+                author: "Dr. Astro",
+                color: "#34495e",
+                content: "<p>Chapter 1: Zero Gravity</p><p>Floating in space is an experience unlike any other. Without gravity holding you down, you are free to move in any direction.</p>"
+            },
+            {
+                id: 5,
+                title: "History of Time",
+                author: "A. Einstein (Fan)",
+                color: "#e67e22",
+                content: "<p>Prologue</p><p>Time is a construct that has fascinated humans for centuries. Is it linear? Is it a loop? Let us dive into the theories.</p>"
             }
-        }
+        ];
 
-        function downloadPDF() {
-            if (!pdfBlobUrl) return;
-            const a = document.createElement('a');
-            a.href = pdfBlobUrl;
-            a.download = `Document_${Date.now()}.pdf`;
-            a.click();
-        }
+        // 2. Render Books to the Grid
+        const grid = document.getElementById('libraryGrid');
 
-        // --- QR Preview Logic ---
-        function handleQRPreview() {
-            const data = document.getElementById('qrInputData').value;
-            if (!data) return alert("Data တစ်ခုခုရိုက်ပါ");
+        function renderBooks(books) {
+            grid.innerHTML = ""; // Clear current list
+            books.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.className = 'book-card';
+                bookCard.onclick = () => openBook(book.id);
 
-            const canvas = document.getElementById('qrCanvas');
-            // QRCode library ကို သေချာခေါ်ယူအသုံးပြုခြင်း
-            QRCode.toCanvas(canvas, data, {
-                width: 250,
-                margin: 2,
-                color: { dark: "#000000", light: "#ffffff" }
-            }, function (error) {
-                if (error) {
-                    alert("QR Error: " + error);
-                } else {
-                    document.getElementById('qrPreviewBox').classList.remove('hidden');
-                }
+                // Create HTML for card
+                bookCard.innerHTML = `
+                    <div class="book-cover" style="background-color: ${book.color}">
+                        ${book.title[0]}
+                    </div>
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.author}</div>
+                    </div>
+                `;
+                grid.appendChild(bookCard);
             });
         }
 
-        function downloadQR() {
-            const canvas = document.getElementById('qrCanvas');
-            const link = document.createElement('a');
-            link.href = canvas.toDataURL("image/png");
-            link.download = `QR_${Date.now()}.png`;
-            link.click();
+        // 3. Open Book Function (Reader Mode)
+        function openBook(id) {
+            const book = booksDB.find(b => b.id === id);
+            if (book) {
+                document.getElementById('readerTitle').innerText = book.title;
+                document.getElementById('readerAuthor').innerText = book.author;
+                document.getElementById('readerText').innerHTML = book.content; // Injects HTML content
+                
+                document.getElementById('readerModal').style.display = 'block';
+                document.body.style.overflow = 'hidden'; // Stop background scrolling
+            }
         }
+
+        // 4. Close Book Function
+        function closeBook() {
+            document.getElementById('readerModal').style.display = 'none';
+            document.body.style.overflow = 'auto'; // Restore scrolling
+        }
+
+        // 5. Search Function
+        function filterBooks() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = booksDB.filter(book => 
+                book.title.toLowerCase().includes(query) || 
+                book.author.toLowerCase().includes(query)
+            );
+            renderBooks(filtered);
+        }
+
+        // Initial Render
+        renderBooks(booksDB);
+
     </script>
 </body>
 </html>
